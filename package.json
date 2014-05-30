@@ -1,0 +1,26 @@
+{
+  "name": "tm2-automate",
+  "version": "0.0.1",
+  "description": "A JSON flat file tag list to SQL converter for rendering purposes",
+  "keywords": ["nps", "OpenStreetMap", "postgres"],
+  "author": "Jim McAndrew <james_mcandrew@partner.nps.gov>",
+  "license": "Public Domain",
+  "contributors": [{
+    "name": "Jim McAndrew",
+    "email": "james_mcandrew@partner.nps.gov"
+  }, {
+    "name": "Nate Irwin",
+    "email": "nate_irwin@nps.gov"
+  }],
+  "scripts": {
+    "start": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jimmyrocks/tm2-automate"
+  },
+  "dependencies": {
+    "pg": "3.1.0",
+    "q": "1.0.1"
+  }
+}
