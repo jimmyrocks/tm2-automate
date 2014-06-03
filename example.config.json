@@ -1,4 +1,5 @@
 {
+  "idSourcePath": "/source.json?id=tmsource:///path/to/your/file.tm2",
   "database": {
     "username": "USERNAME",
     "password": "PASSWORD",
