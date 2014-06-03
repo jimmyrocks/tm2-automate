@@ -5,7 +5,7 @@ SELECT
   ST_AsGeoJson(
     ST_Envelope(
       ST_Buffer(
-        way, 1, 2 --Buffering the point by 1 meter makes a point a polygon
+        ST_UNION(way), 1, 2 --Buffering the point by 1 meter makes a point a polygon
   )))
 FROM
   places_points
