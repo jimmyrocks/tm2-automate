@@ -1,9 +1,8 @@
 {
-  "presetDir": "../places/data/presets/presets/",
   "database": {
     "username": "USERNAME",
     "password": "PASSWORD",
-    "address": "HOSTNAME",
+    "hostname": "HOSTNAME",
     "dbname": "DATABASE_NAME"
   
 }
