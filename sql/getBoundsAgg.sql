@@ -3,10 +3,14 @@
 
 SELECT
   ST_AsGeoJson(
-    ST_Envelope(
-      ST_Buffer(
-        ST_UNION(way), 1, 2 --Buffering the point by 1 meter makes a point a polygon
-  )))
+    ST_Transform(
+      ST_Envelope(
+        ST_Buffer(
+          ST_UNION(way), 1, 2 --Buffering the point by 1 meter makes a point a polygon
+        )
+      ), 4326
+    )
+  )
 FROM
   places_points
 WHERE
