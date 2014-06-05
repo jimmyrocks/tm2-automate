@@ -8,7 +8,6 @@ var config = require('../config'),
       config.database.password + '@' +
       config.database.hostname + '/' +
       config.database.dbname;
-      console.log('con', connectionString);
     pg.connect(connectionString, callback);
   };
 
