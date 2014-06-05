@@ -1,9 +1,11 @@
 {
-  "idSourcePath": "/source.json?id=tmsource:///path/to/your/file.tm2",
+  "tm2ProjectPath": "PATH TO YOUR PROJECT",
+  "tm2MbtilesOutput": "PATH TO YOUR MBTILES FILE",
+  "idSourcePath": "/source.json?id=tmsource:/",
   "database": {
     "username": "USERNAME",
     "password": "PASSWORD",
     "hostname": "HOSTNAME",
-    "dbname": "DATABASE_NAME"
-  
+    "dbname": "DATABASE NAME"
+  }
 }
