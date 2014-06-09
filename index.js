@@ -61,24 +61,30 @@
 
  // Determine the tiles that have changed
  dbUpdate.getTiles(function(e, r) {
-   // Create the tile list
-   var tileList = [];
-   r.map(function(tile) {
-     tileList.push(tile.join('/'));
-   });
-   // Copy The Tiles
-   tileliveCopy({
-       '_': [bridge, mbtilesFile],
-       'scheme': 'raw',
-       'raw': tileList.join('\n'),
-       'job': config.currentJob
-     }, config.tileliveNodeScripts,
-     function(copyE, copyR) {
-       console.log(copyE ? '\n**** Error ****\n' : '\nSuccess!\n');
-       console.log(copyE ? JSON.stringify(copyE, null, 2) : copyR);
-       if (copyE) throw copyE;
-       console.log('\n');
-       process.exit(copyE ? 1 : 0);
-     }
-   );
+   if (r && r.length > 0) {
+     // Create the tile list
+     var tileList = [];
+     r.map(function(tile) {
+       tileList.push(tile.join('/'));
+     });
+     // Copy The Tiles
+     tileliveCopy({
+         '_': [bridge, mbtilesFile],
+         'scheme': 'raw',
+         'raw': tileList.join('\n'),
+         'job': config.currentJob
+       }, config.tileliveNodeScripts,
+       function(copyE, copyR) {
+         console.log(copyE ? '\n**** Error ****\n' : '\nSuccess!\n');
+         console.log(copyE ? JSON.stringify(copyE, null, 2) : copyR);
+         if (copyE) throw copyE;
+         console.log('\n');
+         process.exit(copyE ? 1 : 0);
+       }
+     );
+   } else {
+     console.log(e ? '\n**** Error ****\n' : '\nNothing to Update!\n');
+     if (e) throw e;
+     process.exit(e ? 1 : 0);
+   }
  });
