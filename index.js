@@ -1,9 +1,12 @@
  var database = require('./src/database'),
    config = require('./config'),
    tileMath = require('./src/tilemath'),
-   tilelive = require('tilelive');
- tilelive.protocols['mbtiles:'] = require('mbtiles');
- //console.log(tileMath.toWgs84(tileMath.toWebMercator(-105,39.75).lat, tileMath.toWebMercator(-105,39.75).lon));
+   tileliveCopy = require('./src/copy.js'),
+   mbtilesFile = 'mbtiles://' + config.tm2MbtilesOutput,
+   bridge = 'bridge://' + config.tm2ProjectPath + '/data.xml';
+
+ config.tileliveNodeScripts = (__dirname + '/node_modules/tilelive');
+ config.currentJob = (__dirname + '/tiles/tm2-automate-' + Date.now() + '.job');
 
  var dbUpdate = {
    getBounds: function(callback) {
@@ -56,9 +59,26 @@
    }
  };
 
+ // Determine the tiles that have changed
  dbUpdate.getTiles(function(e, r) {
+   // Create the tile list
+   var tileList = [];
    r.map(function(tile) {
-     console.log(tile.join('/'));
+     tileList.push(tile.join('/'));
    });
-   process.exit(e ? 1 : 0);
+   // Copy The Tiles
+   tileliveCopy({
+       '_': [bridge, mbtilesFile],
+       'scheme': 'raw',
+       'raw': tileList.join('\n'),
+       'job': config.currentJob
+     }, config.tileliveNodeScripts,
+     function(copyE, copyR) {
+       console.log(copyE ? '\n**** Error ****\n' : '\nSuccess!\n');
+       console.log(copyE ? JSON.stringify(copyE, null, 2) : copyR);
+       if (copyE) throw copyE;
+       console.log('\n');
+       process.exit(copyE ? 1 : 0);
+     }
+   );
  });
