@@ -6,7 +6,7 @@
    bridge = 'bridge://' + config.tm2ProjectPath + '/data.xml';
 
  config.tileliveNodeScripts = (__dirname + '/node_modules/tilelive');
- config.currentJob = (__dirname + '/tiles/tm2-automate-' + Date.now() + '.job');
+ config.currentJob = (__dirname + '/tiles/tm2-automate-' + Date.now().toString() + '.job');
 
  var dbUpdate = {
    getBounds: function(callback) {
