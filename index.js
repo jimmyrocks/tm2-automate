@@ -75,15 +75,14 @@
          'job': config.currentJob
        }, config.tileliveNodeScripts,
        function(copyE, copyR) {
-         console.log(copyE ? '\n**** Error ****\n' : '\nSuccess!\n');
+         console.log(copyE ? '**** Error ****' : 'Success!');
          console.log(copyE ? JSON.stringify(copyE, null, 2) : copyR);
          if (copyE) throw copyE;
-         console.log('\n');
          process.exit(copyE ? 1 : 0);
        }
      );
    } else {
-     console.log(e ? '\n**** Error ****\n' : '\nNothing to Update!\n');
+     console.log(e ? '**** Error ****' : 'Nothing to Update!');
      if (e) throw e;
      process.exit(e ? 1 : 0);
    }
