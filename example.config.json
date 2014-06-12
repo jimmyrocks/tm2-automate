@@ -1,10 +1,19 @@
 {
-  "tm2ProjectPath": "PATH TO YOUR PROJECT",
-  "tm2MbtilesOutput": "PATH TO YOUR MBTILES FILE",
-  "database": {
-    "username": "USERNAME",
-    "password": "PASSWORD",
-    "hostname": "HOSTNAME",
-    "dbname": "DATABASE NAME"
+  "TASK NAME": {
+    "database": {
+      "username": "USER NAME",
+      "password": "PASS WORD",
+      "hostname": "HOST NAME",
+      "dbname": "DATABASE NAME",
+      "updateSql": "PATH TO SQL FILE"
+    },
+    "mbtiles": {
+      "downloadFromServer": true,
+      "mapboxId": "MAPBOX ID",
+      "mbtilesPath": "PATH TO MBTILES"
+    },
+    "tilemill2": {
+      "projectPath": "PATH TO TM2 PROJECT"
+    }
   }
 }
