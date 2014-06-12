@@ -1,8 +1,8 @@
-module.exports = function(options, tm2Path, callback) {
+module.exports = function(options, tilelivePath, callback) {
   var util = require('util'),
-    Scheme = require('./scheme')(tm2Path),
-    CopyTask = require(tm2Path + '/lib/copytask'),
-    tilelive = require(tm2Path + '/');
+    Scheme = require('./scheme')(tilelivePath),
+    CopyTask = require(tilelivePath + '/lib/copytask'),
+    tilelive = require(tilelivePath + '/');
 
   function report(stats) {
     var progress = stats.processed / stats.total;
