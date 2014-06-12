@@ -24,6 +24,8 @@
     "q": "1.0.1",
     "tilelive": "4.5.x",
     "mbtiles": "0.4.x",
-    "tilelive-bridge": "0.4.x"
+    "tilelive-bridge": "0.4.x",
+    "minimist": "0.1.0",
+    "request": "2.36.0"
   }
 }
