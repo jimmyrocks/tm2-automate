@@ -2,16 +2,23 @@
   "name": "tm2-automate",
   "version": "0.0.1",
   "description": "A JSON flat file tag list to SQL converter for rendering purposes",
-  "keywords": ["nps", "OpenStreetMap", "postgres"],
+  "keywords": [
+    "nps",
+    "OpenStreetMap",
+    "postgres"
+  ],
   "author": "Jim McAndrew <james_mcandrew@partner.nps.gov>",
   "license": "Public Domain",
-  "contributors": [{
-    "name": "Jim McAndrew",
-    "email": "james_mcandrew@partner.nps.gov"
-  }, {
-    "name": "Nate Irwin",
-    "email": "nate_irwin@nps.gov"
-  }],
+  "contributors": [
+    {
+      "name": "Jim McAndrew",
+      "email": "james_mcandrew@partner.nps.gov"
+    },
+    {
+      "name": "Nate Irwin",
+      "email": "nate_irwin@nps.gov"
+    }
+  ],
   "scripts": {
     "start": "node index"
   },
@@ -20,12 +27,14 @@
     "url": "http://github.com/jimmyrocks/tm2-automate"
   },
   "dependencies": {
+    "mapbox-upload": "0.0.2",
+    "mbtiles": "0.4.x",
+    "minimist": "0.1.0",
     "pg": "3.1.0",
     "q": "1.0.1",
+    "request": "2.36.0",
     "tilelive": "4.5.x",
-    "mbtiles": "0.4.x",
     "tilelive-bridge": "0.4.x",
-    "minimist": "0.1.0",
-    "request": "2.36.0"
+    "mapbox-upload": "0.0.2"
   }
 }
