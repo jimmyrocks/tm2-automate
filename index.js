@@ -6,7 +6,8 @@
    tileliveCopy = require('./src/copy.js'),
    util = require('util'),
    readline = require('readline'),
-   argv = require('minimist')(process.argv.slice(2));
+   argv = require('minimist')(process.argv.slice(2)),
+   mapboxUpload = require('mapbox-upload');
  tilelive.protocols['mbtiles:'] = mbtiles;
 
  var updateTiles = function(config) {
@@ -83,10 +84,25 @@
              'job': config.currentJob
            }, config.tileliveNodeScripts,
            function(copyE, copyR) {
-             console.log(copyE ? '**** Error ****' : 'Success!');
+             console.log(copyE ? '**** Copy Error ****' : ' Copy Success!');
              console.log(copyE ? JSON.stringify(copyE, null, 2) : copyR);
-             if (copyE) throw copyE;
-             process.exit(copyE ? 1 : 0);
+             if (copyE) {
+               throw copyE;
+            } else {
+              mapboxUpload({
+                file: config.mbtiles.mbtilesPath,
+                account: configFile.mapbox.account,
+                accesstoken: configFile.mapbox.accesstoken,
+                mapid: config.mbtiles.mapboxId
+              }, function(uploadErr, uploadRes) {
+
+                console.log(uploadErr ? '**** Upload Error ****' : ' Upload Begin!');
+                uploadRes.once('end', function() {
+                  console.log('Upload Success!');
+                  process.exit(uploadErr ? 1 : 0);
+                });
+              });
+            }
            }
          );
        });
@@ -117,8 +133,8 @@
  };
 
  var startProcess = function(selectedConfig) {
-   if (configFile[selectedConfig]) {
-     updateTiles(configFile[selectedConfig]);
+   if (configFile.interfaces[selectedConfig]) {
+     updateTiles(configFile.interfaces[selectedConfig]);
    } else {
      if (selectedConfig) {
        util.puts('"' + selectedConfig + '" not found\r');
@@ -129,7 +145,7 @@
      });
      util.puts('Which update would you like to run?\r');
      util.puts('-----------------------------------\r');
-     for (var configName in configFile) {
+     for (var configName in configFile.interfaces) {
        util.puts(configName + '\r');
      }
      util.puts('-----------------------------------\r');
