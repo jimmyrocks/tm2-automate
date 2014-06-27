@@ -1,3 +1,6 @@
+-- This is temporary for testing
+-- The array at the end should be (SELECT * FROM join_points_alphacode('tm2-automater'))
+
 SELECT
   ST_AsGeoJson(
     ST_Transform(
@@ -8,6 +11,6 @@ SELECT
     ), 4326)
   )
 FROM
-  places_points, (select join_points_alphacode from join_points_alphacode('poi_update')) updated
+  places_points
 WHERE
-  osm_id = ANY (updated.join_points_alphacode);
+  osm_id = ANY (ARRAY[9287, 5049, 3145, 9273]);
