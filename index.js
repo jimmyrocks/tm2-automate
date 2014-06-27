@@ -63,6 +63,9 @@
              }
            }
          });
+         console.log('tiles:');
+         console.log(JSON.stringify(tiles,null,2));
+         console.log('-----------------------');
          callback(null, tiles);
        });
      }
@@ -126,6 +129,7 @@
        }
      } else {
        console.log(e ? '**** Error ****' : 'Nothing to Update!');
+       console.log('result', r);
        if (e) throw e;
        process.exit(e ? 1 : 0);
      }
