@@ -1,19 +1,26 @@
 {
-  "TASK NAME": {
-    "database": {
-      "username": "USER NAME",
-      "password": "PASS WORD",
-      "hostname": "HOST NAME",
-      "dbname": "DATABASE NAME",
-      "updateSql": "PATH TO SQL FILE"
-    },
-    "mbtiles": {
-      "downloadFromServer": true,
-      "mapboxId": "MAPBOX ID",
-      "mbtilesPath": "PATH TO MBTILES"
-    },
-    "tilemill2": {
-      "projectPath": "PATH TO TM2 PROJECT"
+  "mapbox": {
+    "account": "MAPBOX ACCOUNT NAME",
+    "accesstoken": "FIND YOUR ACCESS TOKEN HERE https://www.mapbox.com/account/apps/"
+  },
+  "interfaces": {
+    "INTERFACE ONE": {
+      "database": {
+        "username": "USERNAME",
+        "password": "PASSWORD",
+        "hostname": "HOST",
+        "dbname": "DATABASE NAME",
+        "updateSql": "/FULL/PATH/TO/sql/FILE.sql"
+      },
+      "mbtiles": {
+        "downloadFromServer": false,
+        "uploadToServer": false,
+        "mapboxId": "MAP ID",
+        "mbtilesPath": "/FULL/PATH/TO/tiles/FILE.mbtiles"
+      },
+      "tilemill2": {
+        "projectPath": "/FULL/PATH/TO/YOUR/FILE.tm2"
+      }
     }
   }
 }
