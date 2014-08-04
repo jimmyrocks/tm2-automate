@@ -64,7 +64,7 @@
            }
          });
          console.log('tiles:');
-         console.log(JSON.stringify(tiles,null,2));
+         console.log(JSON.stringify(tiles, null, 2));
          console.log('-----------------------');
          callback(null, tiles);
        });
@@ -91,21 +91,23 @@
              console.log(copyE ? JSON.stringify(copyE, null, 2) : copyR);
              if (copyE) {
                throw copyE;
-            } else {
-              mapboxUpload({
-                file: config.mbtiles.mbtilesPath,
-                account: configFile.mapbox.account,
-                accesstoken: configFile.mapbox.accesstoken,
-                mapid: config.mbtiles.mapboxId
-              }, function(uploadErr, uploadRes) {
-
-                console.log(uploadErr ? '**** Upload Error ****' : ' Upload Begin!');
-                uploadRes.once('end', function() {
-                  console.log('Upload Success!');
-                  process.exit(uploadErr ? 1 : 0);
-                });
-              });
-            }
+             } else {
+               // Upload to mapbox
+               if (config.mbtiles.uploadToServer) {
+                 mapboxUpload({
+                   file: config.mbtiles.mbtilesPath,
+                   account: configFile.mapbox.account,
+                   accesstoken: configFile.mapbox.accesstoken,
+                   mapid: config.mbtiles.mapboxId
+                 }, function(uploadErr, uploadRes) {
+                   console.log(uploadErr ? '**** Upload Error ****' : ' Upload Begin!');
+                   uploadRes.once('end', function() {
+                     console.log('Upload Success!');
+                     process.exit(uploadErr ? 1 : 0);
+                   });
+                 });
+               }
+             }
            }
          );
        });
