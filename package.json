@@ -27,14 +27,13 @@
     "url": "http://github.com/jimmyrocks/tm2-automate"
   },
   "dependencies": {
-    "mapbox-upload": "0.0.2",
+    "mapbox-upload": "1.1.0",
     "mbtiles": "0.4.x",
     "minimist": "0.1.0",
     "pg": "3.1.0",
     "q": "1.0.1",
     "request": "2.36.0",
     "tilelive": "4.5.x",
-    "tilelive-bridge": "0.4.x",
-    "mapbox-upload": "0.0.2"
+    "tilelive-bridge": "0.4.x"
   }
 }
