@@ -24,5 +24,5 @@ var startDownload = function() {
 if (uploadFile && mapboxId && fs.existsSync(uploadFile)) {
   startDownload();
 } else {
-  console.log('Usage: node upload_new.js MBTILES_FILE_TO_UPLOAD MAP_ID');
+  console.log('Usage: node ./upload_new.js "MBTILES_FILE_TO_UPLOAD" "MAP_ID"');
 }
