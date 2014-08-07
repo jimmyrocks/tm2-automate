@@ -14,33 +14,31 @@ module.exports = function(config) {
     },
     db = {
       readParams: function(rawQuery, objParams) {
-        var returnValue = {
-          query: rawQuery,
-          params: [],
-          tempParams: {}
-        };
+        var re = function(name) {
+            return new RegExp('{{' + name + '}}', 'g');
+          },
+          returnValue = {
+            query: rawQuery,
+            params: [],
+            tempParams: {}
+          };
         if (objParams && Object.prototype.toString.call(objParams) === '[object Object]') {
           for (var paramIndex in objParams) {
-            returnValue.tempParams[paramIndex] = '$' + (returnValue.params.push(objParams[paramIndex]));
+            if (rawQuery.match(re(paramIndex))) {
+              returnValue.tempParams[paramIndex] = '$' + (returnValue.params.push(objParams[paramIndex]));
+            }
           }
           returnValue.query = fandlebars(rawQuery, returnValue.tempParams);
-          console.log('ret', returnValue);
           delete returnValue.tempParams;
         }
         return returnValue;
       },
       runQuery: function(query, params, callback) {
-        console.log(params);
-        console.log('type', typeof(params));
         if (params && Object.prototype.toString.call(params) === '[object Object]') {
           var newParams = db.readParams(query, params);
           query = newParams.query;
           params = newParams.params;
         }
-        console.log('params', params);
-        console.log('query', query);
-        callback(null, {});
-        /*
         connect(function(err, client, done) {
           if (err) {
             return console.error('error fetching client from pool', err);
@@ -53,7 +51,6 @@ module.exports = function(config) {
             callback(err, result);
           });
         });
-        */
       },
       runScript: function(filename, params, callback) {
         fs.readFile(filename, 'utf8', function(err, res) {
