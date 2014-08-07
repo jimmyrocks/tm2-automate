@@ -1,0 +1,6 @@
+SELECT
+  *
+FROM
+  nodes
+LIMIT
+  10000;
