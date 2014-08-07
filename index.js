@@ -1,7 +1,11 @@
 var configFile = require('./config'),
+  database = require('./src/database'),
   argv = require('minimist')(process.argv.slice(2));
 
 var startProcess = function(config, startTime) {
+  database(config).runScript(config.database.updateSql, {lastUpdate: startTime}, function(e,r) {
+    console.log(e,r);
+  });
   // First we need to start three tasks:
   //   * refresh the rendered data
   //   * retrieve the updated points
