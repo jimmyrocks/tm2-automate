@@ -1,5 +1,5 @@
-var request = require('request'),
-  fs = require('fs'),
+var fs = require('fs'),
+  request = require('request'),
   util = require('util');
 
 module.exports = function download(url, dest, callback, silent) {
