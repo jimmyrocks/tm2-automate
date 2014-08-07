@@ -1,35 +1,24 @@
-var configFile = require('./config'),
-  database = require('./src/database'),
-  argv = require('minimist')(process.argv.slice(2));
+var argv = require('minimist')(process.argv.slice(2)),
+  tasks = require('./src/tasks.js'),
+  Q = require('q');
 
-var startProcess = function(config, startTime) {
-  database(config).runScript(config.database.updateSql, {lastUpdate: startTime}, function(e,r) {
-    console.log(e,r);
+var executeTasks = function(config, startTime) {
+
+  Q.all([
+    // * refresh the rendered data
+    tasks.renderData(config, startTime),
+    // * Create a list of the required tiles
+    tasks.getBounds(config, startTime)
+    // * Download the last version of mbtiles
+    // tasks.downloadTiles(config.mbtiles.mapboxId)
+  ]).done(function(r) {
+    // Once the three tasks are done:
+    // Copy in the new tiles with tileliveCopy
+    // Upload the tiles to mapbox
+    console.log('done');
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(0);
   });
-  // First we need to start three tasks:
-  //   * refresh the rendered data
-  //   * retrieve the updated points
-  //     * Create the list of tiles the change
-  //     * De-duplicate the list
-  //   * Download the last version of mbtiles
-  // Once the three tasks are done:
-  // Copy in the new tiles with tileliveCopy
-  // Upload the tiles to mapbox
- 
-  return [config, startTime];
 };
 
-var validateArgs = function(args) {
-  if (
-      args.i &&
-      args.d &&
-      configFile.interfaces[args.i] &&
-      args.d) {
-    // We will need to check these args at some point
-    startProcess(configFile.interfaces[args.i], args.d);
-  } else {
-    console.log('invalid args (requires -i for interface and -d with date');
-  }
-};
-
-validateArgs(argv);
+tasks.validateArgs(argv, executeTasks);
