@@ -44,10 +44,31 @@ module.exports = {
         innerTaskList.getZoom(),
         innerTaskList.getTiles()
       ]).done(function(res) {
-        var returnValue = {};
+        var returnValue = {},
+          tiles = [];
         returnValue.minZoom = res[0].minzoom;
         returnValue.maxZoom = res[0].maxzoom;
-        // TODO START HERE
+        for (var row in res[1][0].result.rows) {
+          var currentRow = res[1][0].result.rows[row];
+          tiles = tiles.concat(module.exports.tiles.getTilesFromBounds(
+            parseFloat(currentRow.minlon, 10),
+            parseFloat(currentRow.maxlon, 10),
+            parseFloat(currentRow.minlat, 10),
+            parseFloat(currentRow.maxlat, 10),
+            parseFloat(res[0].minzoom, 10),
+            parseFloat(res[0].maxzoom, 10)
+          ));
+        }
+        returnValue.tiles = tiles.filter(function(item, position, base) {
+          var duplicateFound = false;
+          for (var i = 0; i < position; i++) {
+            if (base[i].toString() === item.toString()) {
+              duplicateFound = true;
+              break;
+            }
+          }
+          return !duplicateFound;
+        });
 
         deferred.resolve(returnValue);
       });
@@ -79,10 +100,10 @@ module.exports = {
         tms = {};
       for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
         tms[zoom] = {
-            minX: tileMath.long2tile(minLon, zoom),
-            minY: tileMath.lat2tms(minLat, zoom),
-            maxX: tileMath.long2tile(maxLon, zoom),
-            maxY: tileMath.lat2tms(maxLat, zoom)
+          minX: tileMath.long2tile(minLon, zoom),
+          minY: tileMath.lat2tms(minLat, zoom),
+          maxX: tileMath.long2tile(maxLon, zoom),
+          maxY: tileMath.lat2tms(maxLat, zoom)
         };
         for (var xRow = tms[zoom].minX; xRow <= tms[zoom].maxX; xRow++) {
           for (var yRow = tms[zoom].minY; yRow <= tms[zoom].maxY; yRow++) {
@@ -90,6 +111,7 @@ module.exports = {
           }
         }
       }
+      return tiles;
     }
   },
   validateArgs: function(args, callback) {
