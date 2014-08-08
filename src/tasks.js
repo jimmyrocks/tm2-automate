@@ -1,15 +1,14 @@
-var configFile = require('../config'),
+ var configFile = require('../config'),
   database = require('./database'),
   fs = require('fs'),
   tileMath = require('./tilemath'),
   mapboxUpload = require('mapbox-upload'),
   Q = require('q'),
-  request = require('request'),
   tilelive = require('tilelive'),
   tileMath = require('./tilemath'),
   yaml = require('js-yaml');
 
-module.exports = {
+var tasks = module.exports = {
   database: {
     renderData: function(config, startTime) {
       var deferred = Q.defer();
@@ -25,7 +24,7 @@ module.exports = {
       var innerTaskList = {
         getProjectYML: function() {
           var innerDeferred = Q.defer();
-          fs.readFile(config.tilemill2.projectPath + '/data.yml', function(e,r) {
+          fs.readFile(config.tilemill2.projectPath + '/data.yml', function(e, r) {
             if (e) throw e;
             innerDeferred.resolve(yaml.load(r));
           });
@@ -57,7 +56,7 @@ module.exports = {
         }
         for (var row in res[1][0].result.rows) {
           var currentRow = res[1][0].result.rows[row];
-          tiles = tiles.concat(module.exports.tiles.getTilesFromBounds(
+          tiles = tiles.concat(tasks.tiles.getTilesFromBounds(
             parseFloat(currentRow.minlon, 10),
             parseFloat(currentRow.maxlon, 10),
             parseFloat(currentRow.minlat, 10),
@@ -67,21 +66,19 @@ module.exports = {
             returnValue.bufferSize
           ));
         }
-        returnValue.tiles = tiles.filter(function(item, position, base) {
-          var duplicateFound = false;
-          for (var i = 0; i < position; i++) {
-            if (base[i].toString() === item.toString()) {
-              duplicateFound = true;
-              break;
-            }
-          }
-          return !duplicateFound;
+        returnValue.tileListFile = config.tilemill2.projectPath + '/.newtiles.list';
+        fs.writeFile(returnValue.tileListFile, tasks.deduplicate(tiles).join('\n'), function(writeErr) {
+          if (writeErr) throw writeErr;
+          deferred.resolve(returnValue);
         });
-
-        deferred.resolve(returnValue);
       });
       return deferred.promise;
     }
+  },
+  deduplicate: function(array) {
+    return array.filter(function(item, position, base) {
+      return (base.indexOf(item) === position);
+    });
   },
   mbtiles: {
     getInfo: function(mbtilesFile, callback) {
@@ -115,7 +112,7 @@ module.exports = {
         };
         for (var xRow = tms[zoom].minX; xRow <= tms[zoom].maxX; xRow++) {
           for (var yRow = tms[zoom].minY; yRow >= tms[zoom].maxY; yRow--) {
-            tiles.push([zoom, xRow, yRow]);
+            tiles.push([zoom, xRow, yRow].join('/'));
           }
         }
       }
