@@ -9,16 +9,16 @@ module.exports = {
       x: x
     };
   },
-  lat2tms: function(lat, zoom) {
+  lat2tms: function(lat, zoom, pixelOffset) {
     var yMax = 1 << zoom;
-    return yMax - (module.exports.lat2tile(lat, zoom)) - 1;
+    return yMax - (module.exports.lat2tile(lat, zoom, pixelOffset)) - 1;
   },
   //http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-  long2tile: function(lon, zoom) {
-    return (Math.floor((lon + 180) / 360 * Math.pow(2, zoom)));
+  long2tile: function(lon, zoom, pixelOffset) {
+    return (Math.floor((lon + 180) / 360 * Math.pow(2, zoom) + (pixelOffset ? pixelOffset/256 : 0)));
   },
-  lat2tile: function(lat, zoom) {
-    return (Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)));
+  lat2tile: function(lat, zoom, pixelOffset) {
+    return (Math.floor(((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)) + (pixelOffset ? pixelOffset/256 : 0)));
   },
   tile2long: function(x, z) {
     return (x / Math.pow(2, z) * 360 - 180);
