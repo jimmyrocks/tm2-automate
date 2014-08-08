@@ -3,13 +3,13 @@ var fandlebars = require('./fandlebars'),
   pg = require('pg'),
   Q = require('q');
 
-module.exports = function(config) {
+module.exports = function(config, dbname) {
   var connect = function(callback) {
       var connectionString = 'postgres://' +
         config.database.username + ':' +
         config.database.password + '@' +
         config.database.hostname + '/' +
-        config.database.dbname;
+        dbname || config.database.dbname;
       pg.connect(connectionString, callback);
     },
     db = {
