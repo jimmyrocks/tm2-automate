@@ -13,7 +13,7 @@ module.exports = {
   database: {
     renderData: function(config, startTime) {
       var deferred = Q.defer();
-      database(config).runScript(config.database.renderData, {
+      database(config, config.database.scripts.render.dbname).runScript(config.database.scripts.render.sql, {
         lastUpdate: startTime
       }, function(e, r) {
         deferred.resolve(r);
@@ -33,7 +33,7 @@ module.exports = {
         },
         getTiles: function() {
           var innerDeferred = Q.defer();
-          database(config).runScript(config.database.updateSql, {
+          database(config, config.database.scripts.bounds.dbname).runScript(config.database.scripts.bounds.sql, {
             lastUpdate: startTime
           }, function(err, res) {
             innerDeferred.resolve(res);
