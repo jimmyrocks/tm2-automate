@@ -1,8 +1,8 @@
  var configFile = require('../config'),
    database = require('./database'),
    download = require('./download'),
+   exec = require('child_process').exec,
    fs = require('fs'),
-   tileMath = require('./tilemath'),
    mapboxUpload = require('mapbox-upload'),
    Q = require('q'),
    tilelive = require('tilelive'),
@@ -55,19 +55,42 @@
              returnValue.bufferSize = bufferSize;
            }
          }
+         returnValue.bounds = {
+           raw: {
+             north: '-90',
+             south: '90',
+             east: '-180',
+             west: '180'
+           }
+         };
          for (var row in res[1][0].result.rows) {
-           var currentRow = res[1][0].result.rows[row];
-           tiles = tiles.concat(tasks.tiles.getTilesFromBounds(
-             parseFloat(currentRow.minlon, 10),
-             parseFloat(currentRow.maxlon, 10),
-             parseFloat(currentRow.minlat, 10),
-             parseFloat(currentRow.maxlat, 10),
+           var currentRow = res[1][0].result.rows[row],
+             currentBounds = {
+               north: parseFloat(currentRow.maxlat, 10),
+               south: parseFloat(currentRow.minlat, 10),
+               east: parseFloat(currentRow.maxlon, 10),
+               west: parseFloat(currentRow.minlon, 10)
+             };
+           // Find the min/max
+           returnValue.bounds.raw.north = currentBounds.north > returnValue.bounds.raw.north ? currentBounds.north : returnValue.bounds.raw.north;
+           returnValue.bounds.raw.south = currentBounds.south < returnValue.bounds.raw.south ? currentBounds.south : returnValue.bounds.raw.south;
+           returnValue.bounds.raw.east = currentBounds.east > returnValue.bounds.raw.east ? currentBounds.east : returnValue.bounds.raw.east;
+           returnValue.bounds.raw.west = currentBounds.west < returnValue.bounds.raw.west ? currentBounds.west : returnValue.bounds.raw.west;
+           returnValue.bounds.render = tasks.tiles.getRenderBoundsFromBounds(
+             returnValue.bounds.raw,
              parseFloat(res[0].minzoom, 10),
+             returnValue.bufferSize
+           );
+
+           // Calculate the tiles
+           tiles = tiles.concat(tasks.tiles.getTilesFromBounds(
+             currentBounds,
+            parseFloat(res[0].minzoom, 10),
              parseFloat(res[0].maxzoom, 10),
              returnValue.bufferSize
            ));
          }
-         returnValue.tileListFile = config.tilemill2.projectPath + '/.newtiles.list';
+         returnValue.tileListFile = config.mbtiles.mbtilesDir + '/.newtiles.list';
          fs.writeFile(returnValue.tileListFile, tasks.deduplicate(tiles).join('\n'), function(writeErr) {
            if (writeErr) throw writeErr;
            deferred.resolve(returnValue);
@@ -100,8 +123,26 @@
          callback(res);
        });
      },
-     updateTiles: function(mbtilesFile, tileList, tm2ProjectPath, callback) {
-       return [mbtilesFile, tileList, tm2ProjectPath, callback];
+     updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
+       var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
+       var tileliveCopyPath = __dirname + './node_modules/tilelive.js/bin/tilelive-copy';
+       var command = [
+         '--scheme', 'list',
+         '--list', tileInfo.tileListFile,
+         '--minzoom', tileInfo.minZoom,
+         '--maxzoom', tileInfo.maxZoom,
+         '--bounds', [tileInfo.bounds.render.west, tileInfo.bounds.render.south, tileInfo.bounds.render.east, tileInfo.bounds.render.north].join(','),
+         mbtilesFile,
+         tm2ProjectPath
+       ].join(' ');
+       callback(null, tileliveCopyPath + ' ' + command);
+       /*exec(tileliveCopyPath + ' ' + command, function(error, stdout, stderr) {
+         if (!error && !stderr) {
+           callback(stdout);
+         } else {
+           console.log('error', error, stderr);
+         }
+       });*/
      },
      uploadTiles: function(mbtilesFile, mapboxId, callback) {
        mapboxUpload({
@@ -113,15 +154,23 @@
      }
    },
    tiles: {
-     getTilesFromBounds: function(minLon, maxLon, minLat, maxLat, minZoom, maxZoom, bufferPx) {
+     getRenderBoundsFromBounds: function(bounds, minZoom, bufferPx) {
+       return {
+         north: tileMath.tile2lat(tileMath.lat2tile(bounds.north, minZoom, bufferPx), minZoom),
+         south: tileMath.tile2lat((tileMath.lat2tile(bounds.south, minZoom, bufferPx * -1) + 1), minZoom),
+         east: tileMath.tile2long((tileMath.long2tile(bounds.east, minZoom, bufferPx) + 1), minZoom),
+         west: tileMath.tile2long(tileMath.long2tile(bounds.west, minZoom, bufferPx * -1), minZoom)
+       };
+     },
+     getTilesFromBounds: function(bounds, minZoom, maxZoom, bufferPx) {
        var tiles = [],
          tms = {};
        for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
          tms[zoom] = {
-           minX: tileMath.long2tile(minLon, zoom, bufferPx * -1),
-           minY: tileMath.lat2tms(minLat, zoom, bufferPx * -1),
-           maxX: tileMath.long2tile(maxLon, zoom, bufferPx),
-           maxY: tileMath.lat2tms(maxLat, zoom, bufferPx)
+           minX: tileMath.long2tile(bounds.west, zoom, bufferPx * -1),
+           minY: tileMath.lat2tms(bounds.south, zoom, bufferPx * -1),
+           maxX: tileMath.long2tile(bounds.east, zoom, bufferPx),
+           maxY: tileMath.lat2tms(bounds.north, zoom, bufferPx)
          };
          for (var xRow = tms[zoom].minX; xRow <= tms[zoom].maxX; xRow++) {
            for (var yRow = tms[zoom].minY; yRow >= tms[zoom].maxY; yRow--) {
@@ -142,6 +191,11 @@
        callback(configFile.projects[args.project], args.startTime);
      } else {
        console.log('invalid args (requires -p for project and -d with datetime');
+       console.log('Valid projects are:');
+       for (var projectName in configFile.projects) {
+         console.log('  * ' + projectName);
+       }
+       console.log('');
      }
    }
  };
