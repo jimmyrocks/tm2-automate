@@ -23,6 +23,10 @@ var executeTasks = function(config, startTime) {
   ]).done(function(r) {
     // Once the three tasks are done:
     // Copy in the new tiles with tileliveCopy
+    //updateTiles: function(mbtilesFile, tileList, tm2ProjectPath, callback) {¶
+    tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(e,r) {
+      console.log(e,r);
+    });
     // Upload the tiles to mapbox
     console.log('done');
     console.log(JSON.stringify(r[1], null, 2));
