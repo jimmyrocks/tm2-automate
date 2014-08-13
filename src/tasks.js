@@ -125,7 +125,7 @@
      },
      updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
        var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
-       var tileliveCopyPath = __dirname + './node_modules/tilelive.js/bin/tilelive-copy';
+       var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
        var command = [
          '--scheme', 'list',
          '--list', tileInfo.tileListFile,
