@@ -127,14 +127,14 @@
        var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
        var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
        var command = [
-         '--scheme', 'list',
-         '--list', tileInfo.tileListFile,
-         '--minzoom', tileInfo.minZoom,
-         '--maxzoom', tileInfo.maxZoom,
-         '--bounds', [tileInfo.bounds.render.west, tileInfo.bounds.render.south, tileInfo.bounds.render.east, tileInfo.bounds.render.north].join(','),
-         mbtilesFile,
-         tm2ProjectPath
-       ].join(' ');
+         ' --scheme ', 'list',
+         ' --list ', tileInfo.tileListFile,
+         ' --minzoom ', tileInfo.minZoom,
+         ' --maxzoom ', tileInfo.maxZoom,
+         ' --b', [tileInfo.bounds.render.west, tileInfo.bounds.render.south, tileInfo.bounds.render.east, tileInfo.bounds.render.north].join(','), ' ',
+         'mbtiles://' + mbtilesFile, ' ',
+         'bridge://' + tm2ProjectPath, '/data.xml'
+       ].join('');
        callback(null, tileliveCopyPath + ' ' + command);
        /*exec(tileliveCopyPath + ' ' + command, function(error, stdout, stderr) {
          if (!error && !stderr) {
