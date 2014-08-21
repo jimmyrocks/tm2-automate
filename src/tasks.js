@@ -1,7 +1,7 @@
  var configFile = require('../config'),
    database = require('./database'),
    download = require('./download'),
-   exec = require('child_process').exec,
+   exec = require('shelljs').exec,
    fs = require('fs'),
    mapboxUpload = require('mapbox-upload'),
    Q = require('q'),
@@ -49,6 +49,8 @@
            tiles = [];
          returnValue.minZoom = res[0].minzoom;
          returnValue.maxZoom = res[0].maxzoom;
+         returnValue.extent = tasks.mbtiles.parseBounds(res[0].Layer);
+         console.log(JSON.stringify(res[0], null, 2));
          for (var layerIndex = 0; layerIndex < res[0].Layer.length; layerIndex++) {
            var bufferSize = res[0].Layer[layerIndex].properties['buffer-size'];
            if (bufferSize && ((returnValue.bufferSize && bufferSize > returnValue.bufferSize) || !returnValue.bufferSize)) {
@@ -63,6 +65,9 @@
              west: '180'
            }
          };
+         if (res[1][0].rowCount === 0) {
+           console.log('No Updates');
+         }
          for (var row in res[1][0].result.rows) {
            var currentRow = res[1][0].result.rows[row],
              currentBounds = {
@@ -76,6 +81,7 @@
            returnValue.bounds.raw.south = currentBounds.south < returnValue.bounds.raw.south ? currentBounds.south : returnValue.bounds.raw.south;
            returnValue.bounds.raw.east = currentBounds.east > returnValue.bounds.raw.east ? currentBounds.east : returnValue.bounds.raw.east;
            returnValue.bounds.raw.west = currentBounds.west < returnValue.bounds.raw.west ? currentBounds.west : returnValue.bounds.raw.west;
+
            returnValue.bounds.render = tasks.tiles.getRenderBoundsFromBounds(
              returnValue.bounds.raw,
              parseFloat(res[0].minzoom, 10),
@@ -85,12 +91,12 @@
            // Calculate the tiles
            tiles = tiles.concat(tasks.tiles.getTilesFromBounds(
              currentBounds,
-            parseFloat(res[0].minzoom, 10),
+             parseFloat(res[0].minzoom, 10),
              parseFloat(res[0].maxzoom, 10),
              returnValue.bufferSize
            ));
          }
-         returnValue.tileListFile = config.mbtiles.mbtilesDir + '/.newtiles.list';
+         returnValue.tileListFile = config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId  + '.list';
          fs.writeFile(returnValue.tileListFile, tasks.deduplicate(tiles).join('\n'), function(writeErr) {
            if (writeErr) throw writeErr;
            deferred.resolve(returnValue);
@@ -123,26 +129,60 @@
          callback(res);
        });
      },
+     parseBounds: function(layers) {
+       var bounds = {
+         'east': -20037508.34,
+         'north': -20037508.34,
+         'south': 20037508.34,
+         'west': 20037508.34
+       },
+       boundsArray = [bounds.west, bounds.south, bounds.east, bounds.north],
+       boundsArrayWgs84 = [];
+       layers.map(function(layer) {
+         var layerBoundsArray;
+         if (layer.Datasource && layer.Datasource.extent) {
+           layerBoundsArray = layer.Datasource.extent.split(',');
+           boundsArray[0] = boundsArray[0] > layerBoundsArray[0] ? layerBoundsArray[0] : boundsArray[0];
+           boundsArray[1] = boundsArray[1] > layerBoundsArray[1] ? layerBoundsArray[1] : boundsArray[1];
+           boundsArray[2] = boundsArray[2] < layerBoundsArray[2] ? layerBoundsArray[2] : boundsArray[2];
+           boundsArray[3] = boundsArray[3] < layerBoundsArray[3] ? layerBoundsArray[3] : boundsArray[3];
+         }
+       });
+       console.log('aa', boundsArray);
+       boundsArrayWgs84[0] = tileMath.toWgs84(boundsArray[0], boundsArray[1]).lon;
+       boundsArrayWgs84[1] = tileMath.toWgs84(boundsArray[0], boundsArray[1]).lat;
+       boundsArrayWgs84[2] = tileMath.toWgs84(boundsArray[2], boundsArray[3]).lon;
+       boundsArrayWgs84[3] = tileMath.toWgs84(boundsArray[2], boundsArray[3]).lat;
+       return boundsArrayWgs84.join(',');
+     },
      updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
+       console.log('Updating the Tiles');
        var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
-       var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
        var command = [
-         ' --scheme ', 'list',
-         ' --list ', tileInfo.tileListFile,
+         ' --scheme=', 'list',
+         ' --list=', tileInfo.tileListFile,
+         ' --concurrency=', '16', ' ',
+         'bridge://' + tm2ProjectPath, '/data.xml', ' ',
+         'mbtiles://' + mbtilesFile
+       ].join('');
+       tasks.mbtiles._tileliveCopy(command, callback);
+     },
+     updateAllTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
+       console.log('Updating All the Tiles');
+       var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
+       var command = [
+         ' --scheme ', 'scanline',
          ' --minzoom ', tileInfo.minZoom,
          ' --maxzoom ', tileInfo.maxZoom,
-         ' --b', [tileInfo.bounds.render.west, tileInfo.bounds.render.south, tileInfo.bounds.render.east, tileInfo.bounds.render.north].join(','), ' ',
-         'mbtiles://' + mbtilesFile, ' ',
-         'bridge://' + tm2ProjectPath, '/data.xml'
+         ' -b', tileInfo.extent, ' ',
+         'bridge://' + tm2ProjectPath, '/data.xml', ' ',
+         'mbtiles://' + mbtilesFile
        ].join('');
-       callback(null, tileliveCopyPath + ' ' + command);
-       /*exec(tileliveCopyPath + ' ' + command, function(error, stdout, stderr) {
-         if (!error && !stderr) {
-           callback(stdout);
-         } else {
-           console.log('error', error, stderr);
-         }
-       });*/
+       tasks.mbtiles._tileliveCopy(command, callback);
+     },
+     _tileliveCopy: function(command, callback) {
+       var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
+       callback(exec(tileliveCopyPath + ' ' + command));
      },
      uploadTiles: function(mbtilesFile, mapboxId, callback) {
        mapboxUpload({
@@ -168,12 +208,12 @@
        for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
          tms[zoom] = {
            minX: tileMath.long2tile(bounds.west, zoom, bufferPx * -1),
-           minY: tileMath.lat2tms(bounds.south, zoom, bufferPx * -1),
+           minY: tileMath.lat2tile(bounds.south, zoom, bufferPx * -1),
            maxX: tileMath.long2tile(bounds.east, zoom, bufferPx),
-           maxY: tileMath.lat2tms(bounds.north, zoom, bufferPx)
+           maxY: tileMath.lat2tile(bounds.north, zoom, bufferPx)
          };
          for (var xRow = tms[zoom].minX; xRow <= tms[zoom].maxX; xRow++) {
-           for (var yRow = tms[zoom].minY; yRow >= tms[zoom].maxY; yRow--) {
+           for (var yRow = tms[zoom].minY; yRow <= tms[zoom].maxY; yRow++) {
              tiles.push([zoom, xRow, yRow].join('/'));
            }
          }
