@@ -24,13 +24,24 @@ var executeTasks = function(config, startTime) {
     // Once the three tasks are done:
     // Copy in the new tiles with tileliveCopy
     //updateTiles: function(mbtilesFile, tileList, tm2ProjectPath, callback) {¶
-    tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(e,r) {
-      console.log(e,r);
+    tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(taskResult) {
+      if (taskResult.code === 0) {
+        // Upload the tiles to mapbox
+        if (config.mbtiles.uploadToServer) {
+          console.log('Uploading tiles');
+          tasks.mbtiles.uploadTiles(config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.mbtiles', config.mbtiles.mapboxId, function() {
+            console.log(JSON.stringify(r[1], null, 2));
+            console.log('done');
+            process.exit(0);
+          });
+        } else {
+          console.log(JSON.stringify(r[1], null, 2));
+          process.exit(0);
+        }
+      } else {
+        process.exit(taskResult.code);
+      }
     });
-    // Upload the tiles to mapbox
-    console.log('done');
-    console.log(JSON.stringify(r[1], null, 2));
-    process.exit(0);
   });
 };
 
