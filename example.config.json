@@ -3,20 +3,28 @@
     "account": "MAPBOX ACCOUNT NAME",
     "accesstoken": "FIND YOUR ACCESS TOKEN HERE https://www.mapbox.com/account/apps/"
   },
-  "interfaces": {
-    "INTERFACE ONE": {
+  "projects": {
+    "nps_places_poi": {
       "database": {
         "username": "USERNAME",
         "password": "PASSWORD",
         "hostname": "HOST",
-        "dbname": "DATABASE NAME",
-        "updateSql": "/FULL/PATH/TO/sql/FILE.sql"
+        "scripts": {
+          "render": {
+            "sql": "/FULL/PATH/TO/sql/FILE.sql",
+            "dbname": "DATABASE NAME"
+          },
+          "bounds": {
+            "sql": "/FULL/PATH/TO/sql/FILE.sql",
+            "dbname": "DATABASE NAME"
+          }
+        }
       },
       "mbtiles": {
         "downloadFromServer": false,
         "uploadToServer": false,
         "mapboxId": "MAP ID",
-        "mbtilesPath": "/FULL/PATH/TO/tiles/FILE.mbtiles"
+        "mbtilesDir": "/FULL/PATH/TO/mbtiles directory"
       },
       "tilemill2": {
         "projectPath": "/FULL/PATH/TO/YOUR/FILE.tm2"
