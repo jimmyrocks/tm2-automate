@@ -1,6 +1,4 @@
 SELECT
   *
 FROM
-  nodes
-LIMIT
-  10000;
+  nps_render_pois('tm2-automate');
