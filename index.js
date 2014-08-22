@@ -18,27 +18,31 @@ var executeTasks = function(config, startTime) {
     tasks.database.renderData(config, startTime),
     // * Create a list of the required tiles
     tasks.database.getBounds(config, startTime),
-    // * Download the last version of mbtiles
-    // TODO: Should we do this only after we know if we need to run the script?
-    config.mbtiles.downloadFromServer ? tasks.mbtiles.downloadTiles(config.mbtiles.mbtilesDir, config.mbtiles.mapboxId) : null
   ]).done(function(r) {
-    // Once the three tasks are done:
+    // Once the two tasks are done:
     // Copy in the new tiles with tileliveCopy
     if (r[1].tileListFile) {
-      tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(taskResult) {
-        if (taskResult.code === 0) {
-          // Upload the tiles to mapbox
-          if (config.mbtiles.uploadToServer) {
-            console.log('Uploading tiles');
-            tasks.mbtiles.uploadTiles(config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.mbtiles', config.mbtiles.mapboxId, function() {
-              tasks.exitProcess('done', r[1], 0);
-            });
-          } else {
-            tasks.exitProcess('', r[1], 0);
-          }
-        } else {
-          tasks.exitProcess('mbtiles update error', r[1], taskResult.code);
-        }
+      Q.all([
+        // * Download the last version of mbtiles
+        config.mbtiles.downloadFromServer ? tasks.mbtiles.downloadTiles(config.mbtiles.mbtilesDir, config.mbtiles.mapboxId) : null
+      ]).done(function(r2) {
+        tasks.mbtiles.removeTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(removalResult) {
+          tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(taskResult) {
+            if (taskResult.code === 0) {
+              // Upload the tiles to mapbox
+              if (config.mbtiles.uploadToServer) {
+                console.log('Uploading tiles');
+                tasks.mbtiles.uploadTiles(config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.mbtiles', config.mbtiles.mapboxId, function() {
+                  tasks.exitProcess('done', r[1], 0);
+                });
+              } else {
+                tasks.exitProcess('', r[1], 0);
+              }
+            } else {
+              tasks.exitProcess('mbtiles update error', r[1], taskResult.code);
+            }
+          });
+        });
       });
     } else {
       tasks.exitProcess('No New tiles', r[1], 0);
