@@ -5,8 +5,9 @@
    fs = require('fs'),
    mapboxUpload = require('mapbox-upload'),
    Q = require('q'),
-   tilelive = require('tilelive'),
+   sqlite3 = require('sqlite3'),
    tileMath = require('./tilemath'),
+   tilelive = require('tilelive'),
    yaml = require('js-yaml');
 
  var tasks = module.exports = {
@@ -97,6 +98,7 @@
          }
          if (tiles.length > 0) {
            returnValue.tileListFile = config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.list';
+           returnValue.tileList = tiles;
            fs.writeFile(returnValue.tileListFile, tasks.deduplicate(tiles).join('\n'), function(writeErr) {
              if (writeErr) throw writeErr;
              deferred.resolve(returnValue);
@@ -116,8 +118,14 @@
      });
    },
    exitProcess: function(message, data, code) {
-     console.log(message);
+     if (data.tileList) {
+       delete data.tileList;
+     }
+     console.log('*********************************************************');
      console.log(JSON.stringify(data, null, 2));
+     console.log('*********************************************************');
+     console.log(message);
+     console.log('*********************************************************');
      process.exit(code);
    },
    mbtiles: {
@@ -164,6 +172,44 @@
        boundsArrayWgs84[3] = tileMath.toWgs84(boundsArray[2], boundsArray[3]).lat;
        return boundsArrayWgs84.join(',');
      },
+     removeTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
+       console.log('Removing the Old Tiles');
+       var mbtilesFile = dir + '/' + mapboxId + '.mbtiles',
+         removalQuery = [],
+         tilePaths,
+         sqliteDb = new sqlite3.Database(mbtilesFile);
+       for (var tile in tileInfo.tileList) {
+         tilePaths = tileInfo.tileList[tile].split('/');
+         removalQuery.push('(zoom_level = ' + tilePaths[0] + ' AND tile_column = ' + tilePaths[1] + ' AND tile_row = ' + ((1 << tilePaths[0]) - tilePaths[2] - 1) + ')');
+         removalQuery.push('OR');
+       }
+       if (removalQuery.pop() === 'OR') {
+         sqliteDb.all(
+           'DELETE FROM images WHERE tile_id IN (SELECT tile_id FROM map WHERE ' +
+           removalQuery.join(' ') + ');', function(err, rows) {
+             sqliteDb.close();
+             if (!err) {
+               sqliteDb.all(
+                 'DELETE FROM map WHERE ' +
+                 removalQuery.join(' ') + ';', function(err2, rows2) {
+                   sqliteDb.close();
+                   callback( !! err2);
+                 });
+             } else {
+               callback( !! err)
+             }
+           });
+       } else {
+         callback(false);
+       }
+     },
+     _tileliveCopy: function(command, callback) {
+       var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
+       //callback(exec(tileliveCopyPath + ' ' + command));
+       callback({
+         code: 1
+       });
+     },
      updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
        console.log('Updating the Tiles');
        var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
@@ -178,7 +224,10 @@
      },
      _tileliveCopy: function(command, callback) {
        var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
-       callback(exec(tileliveCopyPath + ' ' + command));
+       //callback(exec(tileliveCopyPath + ' ' + command));
+       callback({
+         code: 1
+       });
      },
      uploadTiles: function(mbtilesFile, mapboxId, callback) {
        mapboxUpload({
@@ -200,16 +249,16 @@
      },
      getTilesFromBounds: function(bounds, minZoom, maxZoom, bufferPx) {
        var tiles = [],
-         tms = {};
+         tileBounds = [];
        for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
-         tms[zoom] = {
+         tileBounds[zoom] = {
            minX: tileMath.long2tile(bounds.west, zoom, bufferPx * -1),
            minY: tileMath.lat2tile(bounds.south, zoom, bufferPx * -1),
            maxX: tileMath.long2tile(bounds.east, zoom, bufferPx),
            maxY: tileMath.lat2tile(bounds.north, zoom, bufferPx)
          };
-         for (var xRow = tms[zoom].minX; xRow <= tms[zoom].maxX; xRow++) {
-           for (var yRow = tms[zoom].minY; yRow <= tms[zoom].maxY; yRow++) {
+         for (var xRow = tileBounds[zoom].minX; xRow <= tileBounds[zoom].maxX; xRow++) {
+           for (var yRow = tileBounds[zoom].minY; yRow <= tileBounds[zoom].maxY; yRow++) {
              tiles.push([zoom, xRow, yRow].join('/'));
            }
          }
