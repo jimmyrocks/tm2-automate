@@ -19,6 +19,7 @@ var executeTasks = function(config, startTime) {
     // * Create a list of the required tiles
     tasks.database.getBounds(config, startTime),
     // * Download the last version of mbtiles
+    // TODO: Should we do this only after we know if we need to run the script?
     config.mbtiles.downloadFromServer ? tasks.mbtiles.downloadTiles(config.mbtiles.mbtilesDir, config.mbtiles.mapboxId) : null
   ]).done(function(r) {
     // Once the three tasks are done:
