@@ -50,7 +50,6 @@
          returnValue.minZoom = res[0].minzoom;
          returnValue.maxZoom = res[0].maxzoom;
          returnValue.extent = tasks.mbtiles.parseBounds(res[0].Layer);
-         console.log(JSON.stringify(res[0], null, 2));
          for (var layerIndex = 0; layerIndex < res[0].Layer.length; layerIndex++) {
            var bufferSize = res[0].Layer[layerIndex].properties['buffer-size'];
            if (bufferSize && ((returnValue.bufferSize && bufferSize > returnValue.bufferSize) || !returnValue.bufferSize)) {
@@ -96,11 +95,17 @@
              returnValue.bufferSize
            ));
          }
-         returnValue.tileListFile = config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId  + '.list';
-         fs.writeFile(returnValue.tileListFile, tasks.deduplicate(tiles).join('\n'), function(writeErr) {
-           if (writeErr) throw writeErr;
+         if (tiles.length > 0) {
+           returnValue.tileListFile = config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.list';
+           fs.writeFile(returnValue.tileListFile, tasks.deduplicate(tiles).join('\n'), function(writeErr) {
+             if (writeErr) throw writeErr;
+             deferred.resolve(returnValue);
+           });
+         } else {
+           // No updates!
+           returnValue.tileListFile = false;
            deferred.resolve(returnValue);
-         });
+         }
        });
        return deferred.promise;
      }
@@ -109,6 +114,11 @@
      return array.filter(function(item, position, base) {
        return (base.indexOf(item) === position);
      });
+   },
+   exitProcess: function(message, data, code) {
+     console.log(message);
+     console.log(JSON.stringify(data, null, 2));
+     process.exit(code);
    },
    mbtiles: {
      downloadTiles: function(dir, mapboxId) {
@@ -136,8 +146,8 @@
          'south': 20037508.34,
          'west': 20037508.34
        },
-       boundsArray = [bounds.west, bounds.south, bounds.east, bounds.north],
-       boundsArrayWgs84 = [];
+         boundsArray = [bounds.west, bounds.south, bounds.east, bounds.north],
+         boundsArrayWgs84 = [];
        layers.map(function(layer) {
          var layerBoundsArray;
          if (layer.Datasource && layer.Datasource.extent) {
@@ -148,7 +158,6 @@
            boundsArray[3] = boundsArray[3] < layerBoundsArray[3] ? layerBoundsArray[3] : boundsArray[3];
          }
        });
-       console.log('aa', boundsArray);
        boundsArrayWgs84[0] = tileMath.toWgs84(boundsArray[0], boundsArray[1]).lon;
        boundsArrayWgs84[1] = tileMath.toWgs84(boundsArray[0], boundsArray[1]).lat;
        boundsArrayWgs84[2] = tileMath.toWgs84(boundsArray[2], boundsArray[3]).lon;
@@ -162,19 +171,6 @@
          ' --scheme=', 'list',
          ' --list=', tileInfo.tileListFile,
          ' --concurrency=', '16', ' ',
-         'bridge://' + tm2ProjectPath, '/data.xml', ' ',
-         'mbtiles://' + mbtilesFile
-       ].join('');
-       tasks.mbtiles._tileliveCopy(command, callback);
-     },
-     updateAllTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
-       console.log('Updating All the Tiles');
-       var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
-       var command = [
-         ' --scheme ', 'scanline',
-         ' --minzoom ', tileInfo.minZoom,
-         ' --maxzoom ', tileInfo.maxZoom,
-         ' -b', tileInfo.extent, ' ',
          'bridge://' + tm2ProjectPath, '/data.xml', ' ',
          'mbtiles://' + mbtilesFile
        ].join('');
