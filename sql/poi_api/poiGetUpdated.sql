@@ -17,7 +17,7 @@ FROM
   FROM
     nodes JOIN changesets ON nodes.changeset_id = changesets.id
   WHERE
-    changesets.created_at > {{lastUpdate}}
+    (changesets.created_at + '5 minutes'::interval) > {{lastUpdate}}
   UNION
   -- WAYS
   SELECT
@@ -31,7 +31,7 @@ FROM
   FROM
     nodes JOIN way_nodes ON nodes.node_id = way_nodes.node_id JOIN changesets ON nodes.changeset_id = changesets.id
   WHERE
-    changesets.created_at > {{lastUpdate}}
+    (changesets.created_at + '5 minutes'::interval) > {{lastUpdate}}
   GROUP BY
     nodes.changeset_id, way_nodes.way_id
 ) updated_points;
