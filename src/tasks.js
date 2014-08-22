@@ -5,7 +5,7 @@
    fs = require('fs'),
    mapboxUpload = require('mapbox-upload'),
    Q = require('q'),
-   sqlite3 = require('sqlite3'),
+   sqliteDb = require('./sqliteDb'),
    tileMath = require('./tilemath'),
    tilelive = require('tilelive'),
    yaml = require('js-yaml');
@@ -13,31 +13,38 @@
  var tasks = module.exports = {
    database: {
      renderData: function(config, startTime) {
+       console.log('Getting the render data');
        var deferred = Q.defer();
        database(config, config.database.scripts.render.dbname).runScript(config.database.scripts.render.sql, {
          lastUpdate: startTime
        }, function(e, r) {
          deferred.resolve(r);
+         console.log('Finished getting the render data');
        });
        return deferred.promise;
      },
      getBounds: function(config, startTime) {
+       console.log('Getting the bounds data');
        var deferred = Q.defer();
        var innerTaskList = {
          getProjectYML: function() {
+           console.log('Getting proj yml');
            var innerDeferred = Q.defer();
            fs.readFile(config.tilemill2.projectPath + '/data.yml', function(e, r) {
              if (e) throw e;
              innerDeferred.resolve(yaml.load(r));
+             console.log('Finished getting proj yml');
            });
            return innerDeferred.promise;
          },
          getTiles: function() {
+           console.log('Getting the tiles');
            var innerDeferred = Q.defer();
            database(config, config.database.scripts.bounds.dbname).runScript(config.database.scripts.bounds.sql, {
              lastUpdate: startTime
            }, function(err, res) {
              innerDeferred.resolve(res);
+             console.log('Finished getting the tiles');
            });
            return innerDeferred.promise;
          }
@@ -110,6 +117,7 @@
          }
        });
        return deferred.promise;
+       console.log('Getting the bounds');
      }
    },
    deduplicate: function(array) {
@@ -130,6 +138,7 @@
    },
    mbtiles: {
      downloadTiles: function(dir, mapboxId) {
+       console.log('Downloading the tiles');
        var deferred = Q.defer(),
          path = dir + '/' + mapboxId + '.mbtiles';
        download(
@@ -138,6 +147,7 @@
          function(e) {
            if (e) throw e;
            deferred.resolve(path);
+           console.log('Finished downloading the tiles');
          });
        return deferred.promise;
      },
@@ -175,40 +185,39 @@
      removeTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
        console.log('Removing the Old Tiles');
        var mbtilesFile = dir + '/' + mapboxId + '.mbtiles',
-         removalQuery = [],
-         tilePaths,
-         sqliteDb = new sqlite3.Database(mbtilesFile);
+         removeImages = sqliteDb(mbtilesFile),
+         removeMaps = sqliteDb(mbtilesFile),
+         tilePaths;
        for (var tile in tileInfo.tileList) {
          tilePaths = tileInfo.tileList[tile].split('/');
-         removalQuery.push('(zoom_level = ' + tilePaths[0] + ' AND tile_column = ' + tilePaths[1] + ' AND tile_row = ' + ((1 << tilePaths[0]) - tilePaths[2] - 1) + ')');
-         removalQuery.push('OR');
+         removeImages.add([
+           'DELETE FROM images WHERE tile_id IN (SELECT tile_id FROM map WHERE ',
+           'zoom_level = ' + tilePaths[0] + ' AND tile_column = ' + tilePaths[1] + ' AND tile_row = ' + ((1 << tilePaths[0]) - tilePaths[2] - 1),
+           ');'
+         ].join(''));
+         removeMaps.add([
+           'DELETE FROM map WHERE ',
+           'zoom_level = ' + tilePaths[0] + ' AND tile_column = ' + tilePaths[1] + ' AND tile_row = ' + ((1 << tilePaths[0]) - tilePaths[2] - 1),
+           ';'
+         ].join(''));
        }
-       if (removalQuery.pop() === 'OR') {
-         sqliteDb.all(
-           'DELETE FROM images WHERE tile_id IN (SELECT tile_id FROM map WHERE ' +
-           removalQuery.join(' ') + ');', function(err, rows) {
-             sqliteDb.close();
-             if (!err) {
-               sqliteDb.all(
-                 'DELETE FROM map WHERE ' +
-                 removalQuery.join(' ') + ';', function(err2, rows2) {
-                   sqliteDb.close();
-                   callback( !! err2);
-                 });
-             } else {
-               callback( !! err)
-             }
-           });
-       } else {
-         callback(false);
-       }
+       removeImages.run(function(iE, iR) {
+         console.log(iR);
+         console.log('Finished removing the Old Tiles (images)');
+         removeMaps.run(function (mE, mR) {
+           console.log(mR);
+           console.log('Finished removing the Old Tiles (map)');
+           console.log('Finished removing the Old Tiles');
+           callback(true);
+         });
+       });
      },
      _tileliveCopy: function(command, callback) {
        var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
-       //callback(exec(tileliveCopyPath + ' ' + command));
-       callback({
+       callback(exec(tileliveCopyPath + ' ' + command));
+       /*callback({
          code: 1
-       });
+       });*/
      },
      updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
        console.log('Updating the Tiles');
@@ -224,10 +233,7 @@
      },
      _tileliveCopy: function(command, callback) {
        var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
-       //callback(exec(tileliveCopyPath + ' ' + command));
-       callback({
-         code: 1
-       });
+       callback(exec(tileliveCopyPath + ' ' + command));
      },
      uploadTiles: function(mbtilesFile, mapboxId, callback) {
        mapboxUpload({

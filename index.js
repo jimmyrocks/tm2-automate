@@ -27,21 +27,26 @@ var executeTasks = function(config, startTime) {
         config.mbtiles.downloadFromServer ? tasks.mbtiles.downloadTiles(config.mbtiles.mbtilesDir, config.mbtiles.mapboxId) : null
       ]).done(function(r2) {
         tasks.mbtiles.removeTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(removalResult) {
-          tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(taskResult) {
-            if (taskResult.code === 0) {
-              // Upload the tiles to mapbox
-              if (config.mbtiles.uploadToServer) {
-                console.log('Uploading tiles');
-                tasks.mbtiles.uploadTiles(config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.mbtiles', config.mbtiles.mapboxId, function() {
-                  tasks.exitProcess('done', r[1], 0);
-                });
+          console.log(removalResult ? "Removal was successful" : "Removal Failure");
+          if (removalResult) {
+            tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(taskResult) {
+              if (taskResult.code === 0) {
+                // Upload the tiles to mapbox
+                if (config.mbtiles.uploadToServer) {
+                  console.log('Uploading tiles');
+                  tasks.mbtiles.uploadTiles(config.mbtiles.mbtilesDir + '/' + config.mbtiles.mapboxId + '.mbtiles', config.mbtiles.mapboxId, function() {
+                    tasks.exitProcess('done', r[1], 0);
+                  });
+                } else {
+                  tasks.exitProcess('', r[1], 0);
+                }
               } else {
-                tasks.exitProcess('', r[1], 0);
+                tasks.exitProcess('mbtiles update error', r[1], taskResult.code);
               }
-            } else {
-              tasks.exitProcess('mbtiles update error', r[1], taskResult.code);
-            }
-          });
+            });
+          } else {
+            tasks.exitProcess('Removal Failure', r[1], 1);
+          }
         });
       });
     } else {
