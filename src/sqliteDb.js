@@ -2,28 +2,29 @@ var sqlite3 = require('sqlite3'),
   Q = require('q');
 
 module.exports = function(sqliteFile) {
-  var isOpen = true;
-  querylist = [];
-  query = {
-    add: function(sql) {
-      if (isOpen) {
-        querylist.push(sql)
-        return true;
-      } else {
-        return false;
-      }
-    },
-    run: function(callback) {
-      if (isOpen) {
-        sqliteDb = new sqlite3.Database(sqliteFile);
-        Q.all(querylist.map(function(sql) {
+  var isOpen = true,
+    querylist = [],
+    query = {
+      add: function(sql) {
+        if (isOpen) {
+          querylist.push(sql);
+          return true;
+        } else {
+          return false;
+        }
+      },
+      run: function(callback) {
+        var sqliteDb;
+        if (isOpen) {
+          sqliteDb = new sqlite3.Database(sqliteFile);
+          Q.all(querylist.map(function(sql) {
             return runCommand(sql, sqliteDb);
           })).done(function(res) {
             isOpen = false;
             callback(null, res);
           });
         } else {
-          callback("connection closed");
+          callback('connection closed');
         }
       }
     },
@@ -39,5 +40,5 @@ module.exports = function(sqliteFile) {
       });
       return deferred.promise;
     };
-    return query;
-  }
+  return query;
+};
