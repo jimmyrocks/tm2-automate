@@ -115,8 +115,8 @@
              deferred.resolve(returnValue);
            }
          });
-         return deferred.promise;
          console.log('Getting the bounds');
+         return deferred.promise;
        }
      },
      deduplicate: function(array) {
@@ -157,12 +157,13 @@
          });
        },
        parseBounds: function(layers) {
+         // Set the bounds to as far in the other direction they can go
          var bounds = {
-           'east': -20037508.34,
-           'north': -20037508.34,
-           'south': 20037508.34,
-           'west': 20037508.34
-         },
+             'east': -20037508.34,
+             'north': -20037508.34,
+             'south': 20037508.34,
+             'west': 20037508.34
+           },
            boundsArray = [bounds.west, bounds.south, bounds.east, bounds.north],
            boundsArrayWgs84 = [];
          layers.map(function(layer) {
@@ -214,9 +215,6 @@
        _tileliveCopy: function(command, callback) {
          var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
          callback(exec(tileliveCopyPath + ' ' + command));
-         /*callback({
-         code: 1
-       });*/
        },
        updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
          console.log('Updating the Tiles');
@@ -229,10 +227,6 @@
            'mbtiles://' + mbtilesFile
          ].join('');
          tasks.mbtiles._tileliveCopy(command, callback);
-       },
-       _tileliveCopy: function(command, callback) {
-         var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
-         callback(exec(tileliveCopyPath + ' ' + command));
        },
        uploadTiles: function(mbtilesFile, mapboxId, callback) {
          mapboxUpload({
