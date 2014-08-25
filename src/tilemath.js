@@ -15,10 +15,10 @@ module.exports = {
   },
   //http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
   long2tile: function(lon, zoom, pixelOffset) {
-    return (Math.floor((lon + 180) / 360 * Math.pow(2, zoom) + (pixelOffset ? pixelOffset/256 : 0)));
+    return (Math.floor((lon + 180) / 360 * Math.pow(2, zoom) + (pixelOffset ? pixelOffset / 256 : 0)));
   },
   lat2tile: function(lat, zoom, pixelOffset) {
-    return (Math.floor(((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)) + (pixelOffset ? pixelOffset/256 : 0)));
+    return (Math.floor(((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)) + (pixelOffset ? pixelOffset / 256 : 0)));
   },
   tile2long: function(x, z) {
     return (x / Math.pow(2, z) * 360 - 180);
