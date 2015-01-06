@@ -1,3 +1,5 @@
+/* USAGE: node upload_new.js FILEPATH MAPBOX_ID */
+
 var configFile = require('./config'),
   fs = require('fs'),
   mapboxId = process.argv[3],
