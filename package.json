@@ -1,6 +1,6 @@
 {
   "name": "tm2-automate",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A JSON flat file tag list to SQL converter for rendering purposes",
   "keywords": [
     "nps",
@@ -24,17 +24,17 @@
     "url": "http://github.com/jimmyrocks/tm2-automate"
   },
   "dependencies": {
-    "js-yaml": "3.2.1",
-    "mapbox-upload": "1.1.2",
-    "mbtiles": "0.5.0",
+    "js-yaml": "3.2.5",
+    "mapbox-upload": "2.0.0",
+    "mbtiles": "0.7.7",
     "minimist": "1.1.0",
     "mkdirp": "0.5.0",
-    "pg": "3.4.1",
-    "q": "1.0.1",
-    "request": "2.40.0",
+    "pg": "4.1.1",
+    "q": "1.1.2",
+    "request": "2.51.0",
     "shelljs": "0.3.0",
-    "sqlite3": "2.2.7",
-    "tilelive": "5.2.2",
-    "tilelive-bridge": "0.6.0"
+    "sqlite3": "3.0.4",
+    "tilelive": "5.4.1",
+    "tilelive-bridge": "1.2.5"
   }
 }
