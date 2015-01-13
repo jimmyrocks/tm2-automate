@@ -18,7 +18,9 @@ var executeTasks = function(config, startTime) {
     tasks.database.renderData(config, startTime),
     // * Create a list of the required tiles
     tasks.database.getBounds(config, startTime),
-  ]).done(function(r) {
+  ]).catch(function(e) {
+    throw new Error(e);
+  }).then(function(r) {
     // Once the two tasks are done:
 
     // Check if there are new tiles that can be updated
@@ -34,6 +36,9 @@ var executeTasks = function(config, startTime) {
           console.log(removalResult ? "Removal was successful" : "Removal Failure");
           if (removalResult) {
             // Copy over the new tiles with tileliveCopy
+            console.log('=================================');
+            console.log(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath);
+            console.log('=================================');
             tasks.mbtiles.updateTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(taskResult) {
               if (taskResult.code === 0) {
                 // Upload the tiles to mapbox
