@@ -214,6 +214,8 @@
        },
        _tileliveCopy: function(command, callback) {
          var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
+         console.log('realcmd');
+         console.log(tileliveCopyPath + ' ' + command);
          callback(exec(tileliveCopyPath + ' ' + command));
        },
        updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
@@ -226,6 +228,9 @@
            'bridge://' + tm2ProjectPath, '/data.xml', ' ',
            'mbtiles://' + mbtilesFile
          ].join('');
+         console.log('COMMAND');
+         console.log(command);
+         console.log('COMMAND');
          tasks.mbtiles._tileliveCopy(command, callback);
        },
        uploadTiles: function(mbtilesFile, mapboxId, callback) {

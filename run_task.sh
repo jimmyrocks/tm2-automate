@@ -6,4 +6,4 @@ if [[ $2 == "all" ]]; then
   OLDTIME=`head -n1 $DIR/.runlog`
 fi
 
-/usr/local/bin/node $DIR/index.js -p $1 -d "$OLDTIME" && echo $NEWTIME >> $DIR/.runlog && echo "Complete"
+/usr/bin/node $DIR/index.js -p $1 -d "$OLDTIME" && echo $NEWTIME >> $DIR/.runlog && echo "Complete"
