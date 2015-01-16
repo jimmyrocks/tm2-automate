@@ -26,11 +26,12 @@ var runDbScript = function(file, params) {
 
 var runServerScript = function(sql, params) {
   return new Bluebird(function(resolve, reject) {
+    var cleanedSql = fandlebars(sql, params).replace(/\'null\'/g,'null');
     var requestPath = 'https://' + config.cartodb.account + '.cartodb.com/api/v2/sql?q=';
-    requestPath += encodeURIComponent(fandlebars(sql, params));
+    requestPath += encodeURIComponent(cleanedSql);
     requestPath += '&api_key=' + config.cartodb.apiKey;
     request(requestPath).then(function(r) {
-      console.log('CartoDB Command Complete', fandlebars(sql, params));
+      console.log('CartoDB Command Complete', cleanedSql);
       resolve(r);
     }).catch(function(e) {
       reject(e);
