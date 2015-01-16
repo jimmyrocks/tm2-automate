@@ -1,0 +1,7 @@
+{
+  "writeStartTime": "start_log.sql",
+  "point": {
+    "getChanges": "get_point_changes.sql",
+    "getNewData": "get_new_points.sql"
+  }
+}
