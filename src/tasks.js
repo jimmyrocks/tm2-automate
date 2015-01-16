@@ -147,122 +147,55 @@
          if (data.tileList) {
            delete data.tileList;
          }
-         console.log('*********************************************************');
-         console.log(JSON.stringify(data, null, 2));
-         console.log('*********************************************************');
-         console.log(message);
-         console.log('*********************************************************');
-         process.exit(code);
+         removeImages.run(function(iE, iR) {
+           console.log(iR);
+           console.log('Finished removing the Old Tiles (images)');
+           removeMaps.run(function(mE, mR) {
+             console.log(mR);
+             console.log('Finished removing the Old Tiles (map)');
+             console.log('Finished removing the Old Tiles');
+             callback(true);
+           });
+         });
        },
-       mbtiles: {
-         downloadTiles: function(dir, mapboxId) {
-           console.log('Downloading the tiles');
-           var deferred = Q.defer(),
-             path = dir + '/' + mapboxId + '.mbtiles';
-           download(
-             'http://a.tiles.mapbox.com/v3/' + mapboxId + '.mbtiles',
-             path,
-             function(e) {
-               console.log((e ? 'Error' : 'Finished') + ' downloading the tiles', e ? e : '');
-               if (e) {
-                 deferred.reject(e);
-               } else {
-                 deferred.resolve(path);
-               }
-             });
-           return deferred.promise;
-         },
-         getInfo: function(mbtilesFile, callback) {
-           tilelive.info(mbtilesFile, function(err, res) {
-             if (err) throw err;
-             callback(res);
-           });
-         },
-         parseBounds: function(layers) {
-           // Set the bounds to as far in the other direction they can go
-           var bounds = {
-               'east': -20037508.34,
-               'north': -20037508.34,
-               'south': 20037508.34,
-               'west': 20037508.34
-             },
-             boundsArray = [bounds.west, bounds.south, bounds.east, bounds.north],
-             boundsArrayWgs84 = [];
-           layers.map(function(layer) {
-             var layerBoundsArray;
-             if (layer.Datasource && layer.Datasource.extent) {
-               layerBoundsArray = layer.Datasource.extent.split(',');
-               boundsArray[0] = boundsArray[0] > layerBoundsArray[0] ? layerBoundsArray[0] : boundsArray[0];
-               boundsArray[1] = boundsArray[1] > layerBoundsArray[1] ? layerBoundsArray[1] : boundsArray[1];
-               boundsArray[2] = boundsArray[2] < layerBoundsArray[2] ? layerBoundsArray[2] : boundsArray[2];
-               boundsArray[3] = boundsArray[3] < layerBoundsArray[3] ? layerBoundsArray[3] : boundsArray[3];
-             }
-           });
-           boundsArrayWgs84[0] = tileMath.toWgs84(boundsArray[0], boundsArray[1]).lon;
-           boundsArrayWgs84[1] = tileMath.toWgs84(boundsArray[0], boundsArray[1]).lat;
-           boundsArrayWgs84[2] = tileMath.toWgs84(boundsArray[2], boundsArray[3]).lon;
-           boundsArrayWgs84[3] = tileMath.toWgs84(boundsArray[2], boundsArray[3]).lat;
-           return boundsArrayWgs84.join(',');
-         },
-         removeTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
-           console.log('Removing the Old Tiles');
-           var mbtilesFile = dir + '/' + mapboxId + '.mbtiles',
-             removeImages = sqliteDb(mbtilesFile),
-             removeMaps = sqliteDb(mbtilesFile),
-             tilePaths;
-           for (var tile in tileInfo.tileList) {
-             tilePaths = tileInfo.tileList[tile].split('/');
-             removeImages.add([
-               'DELETE FROM images WHERE tile_id IN (SELECT tile_id FROM map WHERE ',
-               'zoom_level = ' + tilePaths[0] + ' AND tile_column = ' + tilePaths[1] + ' AND tile_row = ' + ((1 << tilePaths[0]) - tilePaths[2] - 1),
-               ');'
-             ].join(''));
-             removeMaps.add([
-               'DELETE FROM map WHERE ',
-               'zoom_level = ' + tilePaths[0] + ' AND tile_column = ' + tilePaths[1] + ' AND tile_row = ' + ((1 << tilePaths[0]) - tilePaths[2] - 1),
-               ';'
-             ].join(''));
-           }
-           removeImages.run(function(iE, iR) {
-             console.log(iR);
-             console.log('Finished removing the Old Tiles (images)');
-             removeMaps.run(function(mE, mR) {
-               console.log(mR);
-               console.log('Finished removing the Old Tiles (map)');
-               console.log('Finished removing the Old Tiles');
-               callback(true);
-             });
-           });
-         },
-         _tileliveCopy: function(command, callback) {
-           var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
-           console.log('realcmd');
-           console.log(tileliveCopyPath + ' ' + command);
-           callback(exec(tileliveCopyPath + ' ' + command));
-         },
-         updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
-           console.log('Updating the Tiles');
-           var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
-           var command = [
-             ' --scheme=', 'list',
-             ' --list=', tileInfo.tileListFile,
-             ' --concurrency=', '16', ' ',
-             'bridge://' + tm2ProjectPath, '/data.xml', ' ',
-             'mbtiles://' + mbtilesFile
-           ].join('');
-           console.log('COMMAND');
-           console.log(command);
-           console.log('COMMAND');
-           tasks.mbtiles._tileliveCopy(command, callback);
-         },
-         uploadTiles: function(mbtilesFile, mapboxId, callback) {
-           mapboxUpload({
-             account: configFile.mapbox.account,
-             accesstoken: configFile.mapbox.accesstoken,
-             file: mbtilesFile,
-             mapid: mapboxId
-           }, callback);
-         }
+       _tileliveCopy: function(command, callback) {
+         var tileliveCopyPath = __dirname + '/../node_modules/tilelive/bin/tilelive-copy';
+         console.log('realcmd');
+         console.log(tileliveCopyPath + ' ' + command);
+         callback(exec(tileliveCopyPath + ' ' + command));
+       },
+       updateTiles: function(tileInfo, dir, mapboxId, tm2ProjectPath, callback) {
+         console.log('Updating the Tiles');
+         var mbtilesFile = dir + '/' + mapboxId + '.mbtiles';
+         var command = [
+           ' --scheme=', 'list',
+           ' --list=', tileInfo.tileListFile,
+           ' --concurrency=', '16', ' ',
+           'bridge://' + tm2ProjectPath, '/data.xml', ' ',
+           'mbtiles://' + mbtilesFile
+         ].join('');
+         console.log('COMMAND');
+         console.log(command);
+         console.log('COMMAND');
+         tasks.mbtiles._tileliveCopy(command, callback);
+       },
+       uploadTiles: function(mbtilesFile, mapboxId, callback) {
+         mapboxUpload({
+           account: configFile.mapbox.account,
+           accesstoken: configFile.mapbox.accesstoken,
+           file: mbtilesFile,
+           mapid: mapboxId
+         }, callback);
+       }
+     },
+     tiles: {
+       getRenderBoundsFromBounds: function(bounds, minZoom, bufferPx) {
+         return {
+           north: tileMath.tile2lat(tileMath.lat2tile(bounds.north, minZoom, bufferPx), minZoom),
+           south: tileMath.tile2lat((tileMath.lat2tile(bounds.south, minZoom, bufferPx * -1) + 1), minZoom),
+           east: tileMath.tile2long((tileMath.long2tile(bounds.east, minZoom, bufferPx) + 1), minZoom),
+           west: tileMath.tile2long(tileMath.long2tile(bounds.west, minZoom, bufferPx * -1), minZoom)
+         };
        },
        tiles: {
          getRenderBoundsFromBounds: function(bounds, minZoom, bufferPx) {
