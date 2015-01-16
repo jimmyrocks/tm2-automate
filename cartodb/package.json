@@ -1,0 +1,30 @@
+{
+  "name": "cartodb-automate",
+  "version": "0.0.1",
+  "description": "An interface to make it easy to keep our CartoDB database up to date with our internal database",
+  "keywords": ["cartodb", "postgres"],
+  "author": "Jim McAndrew <jim@loc8.us>",
+  "license": "Public Domain",
+  "contributors": [{
+    "name": "Jim McAndrew",
+    "email": "jim_mcandrew@partner.nps.gov"
+  },{
+    "name": "Nate Irwin",
+    "email": "nate_irwin@nps.gov"
+  }
+  ],
+  "scripts": {
+    "start": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jimmyrocks/cartodb-automate"
+  },
+  "dependencies": {
+    "bluebird": "2.7.1",
+    "datawrap": "git+https://github.com/jimmyrocks/datawrap#master",
+    "fandlebars": "git+https://github.com/jimmyrocks/fandlebars#master",
+    "request": "2.51.0"
+  },
+  "engine": "node 0.10.35"
+}
