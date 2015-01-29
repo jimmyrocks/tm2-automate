@@ -3,5 +3,9 @@
   "point": {
     "getChanges": "get_point_changes.sql",
     "getNewData": "get_new_points.sql"
+  },
+  "polygon": {
+    "getChanges": "get_polygon_changes.sql",
+    "getNewData": "get_new_polygons.sql"
   }
 }
