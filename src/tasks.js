@@ -1,13 +1,13 @@
  var configFile = require('../config'),
    database = require('./database'),
-   download = require('./download'),
+   // download = require('./download'),
    exec = require('shelljs').exec,
    fs = require('fs'),
    mapboxUpload = require('mapbox-upload'),
    Q = require('q'),
-   sqliteDb = require('./sqliteDb'),
+   // sqliteDb = require('./sqliteDb'),
    tileMath = require('./tilemath'),
-   tilelive = require('tilelive'),
+   // tilelive = require('tilelive'),
    yaml = require('js-yaml'),
    tasks = module.exports = {
      database: {
@@ -67,7 +67,7 @@
            innerTaskList.getTiles()
          ]).catch(function(e) {
              deferred.reject(e);
-           }.then(function(res) {
+           }).then(function(res) {
              var returnValue = {},
                tiles = [];
              returnValue.minZoom = res[0].minzoom;
@@ -134,7 +134,8 @@
                returnValue.tileListFile = false;
                deferred.resolve(returnValue);
              }
-           }); console.log('Getting the bounds');
+           });
+           console.log('Getting the bounds');
            return deferred.promise;
          }
        },
@@ -186,16 +187,6 @@
            file: mbtilesFile,
            mapid: mapboxId
          }, callback);
-       }
-     },
-     tiles: {
-       getRenderBoundsFromBounds: function(bounds, minZoom, bufferPx) {
-         return {
-           north: tileMath.tile2lat(tileMath.lat2tile(bounds.north, minZoom, bufferPx), minZoom),
-           south: tileMath.tile2lat((tileMath.lat2tile(bounds.south, minZoom, bufferPx * -1) + 1), minZoom),
-           east: tileMath.tile2long((tileMath.long2tile(bounds.east, minZoom, bufferPx) + 1), minZoom),
-           west: tileMath.tile2long(tileMath.long2tile(bounds.west, minZoom, bufferPx * -1), minZoom)
-         };
        },
        tiles: {
          getRenderBoundsFromBounds: function(bounds, minZoom, bufferPx) {
@@ -206,40 +197,50 @@
              west: tileMath.tile2long(tileMath.long2tile(bounds.west, minZoom, bufferPx * -1), minZoom)
            };
          },
-         getTilesFromBounds: function(bounds, minZoom, maxZoom, bufferPx) {
-           var tiles = [],
-             tileBounds = [];
-           for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
-             tileBounds[zoom] = {
-               minX: tileMath.long2tile(bounds.west, zoom, bufferPx * -1),
-               minY: tileMath.lat2tile(bounds.south, zoom, bufferPx * -1),
-               maxX: tileMath.long2tile(bounds.east, zoom, bufferPx),
-               maxY: tileMath.lat2tile(bounds.north, zoom, bufferPx)
+         tiles: {
+           getRenderBoundsFromBounds: function(bounds, minZoom, bufferPx) {
+             return {
+               north: tileMath.tile2lat(tileMath.lat2tile(bounds.north, minZoom, bufferPx), minZoom),
+               south: tileMath.tile2lat((tileMath.lat2tile(bounds.south, minZoom, bufferPx * -1) + 1), minZoom),
+               east: tileMath.tile2long((tileMath.long2tile(bounds.east, minZoom, bufferPx) + 1), minZoom),
+               west: tileMath.tile2long(tileMath.long2tile(bounds.west, minZoom, bufferPx * -1), minZoom)
              };
-             for (var xRow = tileBounds[zoom].minX; xRow <= tileBounds[zoom].maxX; xRow++) {
-               for (var yRow = tileBounds[zoom].minY; yRow <= tileBounds[zoom].maxY; yRow++) {
-                 tiles.push([zoom, xRow, yRow].join('/'));
+           },
+           getTilesFromBounds: function(bounds, minZoom, maxZoom, bufferPx) {
+             var tiles = [],
+               tileBounds = [];
+             for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
+               tileBounds[zoom] = {
+                 minX: tileMath.long2tile(bounds.west, zoom, bufferPx * -1),
+                 minY: tileMath.lat2tile(bounds.south, zoom, bufferPx * -1),
+                 maxX: tileMath.long2tile(bounds.east, zoom, bufferPx),
+                 maxY: tileMath.lat2tile(bounds.north, zoom, bufferPx)
+               };
+               for (var xRow = tileBounds[zoom].minX; xRow <= tileBounds[zoom].maxX; xRow++) {
+                 for (var yRow = tileBounds[zoom].minY; yRow <= tileBounds[zoom].maxY; yRow++) {
+                   tiles.push([zoom, xRow, yRow].join('/'));
+                 }
                }
              }
+             return tiles;
            }
-           return tiles;
-         }
-       },
-       validateArgs: function(args, callback) {
-         if (
-           args.project &&
-           args.startTime &&
-           configFile.projects[args.project] &&
-           args.startTime) {
-           // We will need to check these args at some point
-           callback(configFile.projects[args.project], args.startTime);
-         } else {
-           console.log('invalid args (requires -p for project and -d with datetime');
-           console.log('Valid projects are:');
-           for (var projectName in configFile.projects) {
-             console.log('  * ' + projectName);
+         },
+         validateArgs: function(args, callback) {
+           if (
+             args.project &&
+             args.startTime &&
+             configFile.projects[args.project] &&
+             args.startTime) {
+             // We will need to check these args at some point
+             callback(configFile.projects[args.project], args.startTime);
+           } else {
+             console.log('invalid args (requires -p for project and -d with datetime');
+             console.log('Valid projects are:');
+             for (var projectName in configFile.projects) {
+               console.log('  * ' + projectName);
+             }
+             console.log('');
            }
-           console.log('');
          }
        }
      };

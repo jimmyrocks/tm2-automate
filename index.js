@@ -9,14 +9,14 @@ var argv = require('minimist')(process.argv.slice(2), {
     }
   }),
   tasks = require('./src/tasks.js'),
-  Q = require('q');
+  Bluebird = require('bluebird');
 
 // This is the task runner
 var executeTasks = function(config, startTime) {
 
   // Q will run all the tasks added to its array
   // it returns the results in an array (called r in this case), the first task is index 0, second one is index 1
-  Q.all([
+  Bluebird.all([
     // * refresh the rendered data
     // * This function updates the render table in the database, it does not need to return anything other than and error and a callback when it has finished
     tasks.database.renderData(config, startTime),
@@ -31,7 +31,7 @@ var executeTasks = function(config, startTime) {
     if (r[1].tileListFile) {
 
       // * Download the last version of mbtiles
-      Q.all([
+      Bluebird.all([
         config.mbtiles.downloadFromServer ? tasks.mbtiles.downloadTiles(config.mbtiles.mbtilesDir, config.mbtiles.mapboxId) : null
       ]).catch(function(e) {
         // Catch any errors with the download task
@@ -41,7 +41,7 @@ var executeTasks = function(config, startTime) {
         // * Remove the tiles from our source sqlite file that we are going to update
         // (This is required because tilelive will not copy/replace new blank tiles over existing tiles)
         tasks.mbtiles.removeTiles(r[1], config.mbtiles.mbtilesDir, config.mbtiles.mapboxId, config.tilemill2.projectPath, function(removalResult) {
-          console.log(removalResult ? "Removal was successful" : "Removal Failure");
+          console.log(removalResult ? 'Removal was successful' : 'Removal Failure');
           if (removalResult) {
             // Copy over the new tiles with tileliveCopy
             console.log('=================================');

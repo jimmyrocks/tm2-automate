@@ -29,7 +29,7 @@ FROM
   WHERE
     "nps_render_point"."rendered" >= "render_time"."start_time" AND
     "nps_render_point"."rendered" <= "render_time"."end_time"
-  UNION
+  UNION ALL
   SELECT 
     "osm_id"
   FROM
