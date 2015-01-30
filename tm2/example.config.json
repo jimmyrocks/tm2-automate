@@ -1,0 +1,38 @@
+{
+  "database": {
+    "username": "USERNAME",
+    "password": "PASSWORD",
+    "address": "ADDRESS",
+    "dbname": "DBNAME",
+    "type": "postgresql",
+    "defaults": {
+      "rootDirectory": "{{env.PWD}}/sql",
+      "delimiter": ";",
+      "fileDesignator": "file:///",
+      "fileOptions": {
+        "encoding": "utf8"
+      }
+    }
+  },
+  "interfaces": {
+    "places_points": {
+      "mbtiles": {
+        "downloadFromServer": false,
+        "mapboxId": "MAPBOXID"
+      },
+      "mapboxStudio": {
+        "projectPath": "{{env.PWD}}/PATH/TO/PROJECT"
+      },
+      "getChanges": "file:///getChangedPoints.sql",
+      "startTask": "file:///startTask.sql",
+      "taskName": "test",
+      "tileFile": "{{env.PWD}}/tmp/tiles.txt",
+      "tileliveCopyPath": "{{env.PWD}}/node_modules/tilelive/bin/tilelive-copy",
+      "tempDirectory": "{{env.PWD}}/tmp"
+    }
+  },
+  "mapbox": {
+    "account": "MAPBOX ACCOUNT",
+    "accesstoken": "FIND YOUR ACCESS TOKEN HERE https://www.mapbox.com/account/apps/"
+  }
+}
