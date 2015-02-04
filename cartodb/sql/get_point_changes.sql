@@ -20,9 +20,10 @@ FROM
      COALESCE(
       (SELECT "run_time"
       FROM "nps_render_log"
-      WHERE "render_id" = (SELECT max("render_id")-1
+      WHERE "render_id" = (SELECT max("render_id")
         FROM "nps_render_log"
-        WHERE "task_name" = {{taskName}})
+        WHERE "task_name" = {{taskName}}
+          AND "nps_render_log"."render_id" < (SELECT max(b."render_id") FROM "nps_render_log" b WHERE "task_name" = {{taskName}}))
       ),
       '2010-01-01'::timestamp without time zone
     ) as "start_time") "render_time"
@@ -47,9 +48,10 @@ FROM
      COALESCE(
       (SELECT "run_time"
       FROM "nps_render_log"
-      WHERE "render_id" = (SELECT max("render_id")-1
+      WHERE "render_id" = (SELECT max("render_id")
         FROM "nps_render_log"
-        WHERE "task_name" = {{taskName}})
+        WHERE "task_name" = {{taskName}}
+          AND "nps_render_log"."render_id" < (SELECT max(b."render_id") FROM "nps_render_log" b WHERE "task_name" = {{taskName}}))
       ),
       '2010-01-01'::timestamp without time zone
     ) as "start_time") "render_time"

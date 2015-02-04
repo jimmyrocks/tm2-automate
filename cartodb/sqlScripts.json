@@ -7,5 +7,9 @@
   "polygon": {
     "getChanges": "get_polygon_changes.sql",
     "getNewData": "get_new_polygons.sql"
+  },
+  "line": {
+    "getChanges": "get_line_changes.sql",
+    "getNewData": "get_new_lines.sql"
   }
 }
