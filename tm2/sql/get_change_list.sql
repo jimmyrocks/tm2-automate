@@ -73,15 +73,15 @@ WHERE
   )
 UNION ALL
 SELECT
-  ST_YMax(ST_Transform("the_geom",4326)) AS "maxLat",
-  ST_YMin(ST_Transform("the_geom",4326)) AS "minLat",
-  ST_XMax(ST_Transform("the_geom",4326)) AS "maxLon",
-  ST_XMin(ST_Transform("the_geom",4326)) AS "minLon",
+  ST_YMax(ST_Transform("way",4326)) AS "maxLat",
+  ST_YMin(ST_Transform("way",4326)) AS "minLat",
+  ST_XMax(ST_Transform("way",4326)) AS "maxLon",
+  ST_XMin(ST_Transform("way",4326)) AS "minLon",
   "osm_id"
 FROM
   "nps_change_log"
 WHERE
-  the_geom IS NOT NULL AND
+  "way" IS NOT NULL AND
   "osm_id" IN (
     SELECT
       "new_and_changed"."osm_id" AS "ids"
