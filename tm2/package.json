@@ -1,7 +1,7 @@
 {
   "name": "tm2-automate",
   "version": "0.0.4",
-  "description": "A JSON flat file tag list to SQL converter for rendering purposes",
+  "description": "Automates the usage of tm2 with NPS Park Tiles",
   "keywords": [
     "nps",
     "OpenStreetMap",
@@ -26,18 +26,18 @@
     "url": "http://github.com/nationalparkservice/tm2-automate"
   },
   "dependencies": {
-    "bluebird": "2.9.3",
+    "bluebird": "2.9.12",
     "datawrap": "git+https://github.com/jimmyrocks/datawrap#master",
     "fandlebars": "git+https://github.com/jimmyrocks/fandlebars#master",
-    "js-yaml": "3.2.5",
-    "mapbox-upload": "3.0.0",
+    "js-yaml": "3.2.7",
+    "mapbox-upload": "3.1.0",
     "mbtiles": "0.7.8",
     "minimist": "1.1.0",
     "mkdirp": "0.5.0",
-    "request": "2.51.0",
+    "request": "2.53.0",
     "shelljs": "0.3.0",
-    "sqlite3": "3.0.4",
-    "tilelive": "5.5.4",
+    "sqlite3": "3.0.5",
+    "tilelive": "5.6.1",
     "tilelive-bridge": "1.2.5"
   }
 }

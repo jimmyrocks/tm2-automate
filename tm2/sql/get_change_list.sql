@@ -81,6 +81,7 @@ SELECT
 FROM
   "nps_change_log"
 WHERE
+  the_geom IS NOT NULL AND
   "osm_id" IN (
     SELECT
       "new_and_changed"."osm_id" AS "ids"

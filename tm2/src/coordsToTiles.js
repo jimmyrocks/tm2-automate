@@ -12,17 +12,19 @@ module.exports = function(bboxArray, minZoom, maxZoom, bufferPx) {
     var tileBounds = {}, bboxTiles = [];
     for (var zoom = minZoom; zoom <= maxZoom; zoom++) {
       tileBounds[zoom] = {
-        minX: tileMath.long2tile(parseFloat(bbox.minlon, 10), zoom, bufferPx * -1),
-        minY: tileMath.lat2tile(parseFloat(bbox.minlat, 10), zoom, bufferPx * -1),
-        maxX: tileMath.long2tile(parseFloat(bbox.maxlon, 10), zoom, bufferPx),
-        maxY: tileMath.lat2tile(parseFloat(bbox.maxlat, 10), zoom, bufferPx)
+        minX: tileMath.long2tile(parseFloat(bbox.minLon, 10), zoom, bufferPx * -1),
+        minY: tileMath.lat2tile(parseFloat(bbox.minLat, 10), zoom, bufferPx * -1),
+        maxX: tileMath.long2tile(parseFloat(bbox.maxLon, 10), zoom, bufferPx),
+        maxY: tileMath.lat2tile(parseFloat(bbox.maxLat, 10), zoom, bufferPx)
       };
+      console.log('zoom', zoom, tileBounds[zoom]);
       for (var xRow = tileBounds[zoom].minX; xRow <= tileBounds[zoom].maxX; xRow++) {
         for (var yRow = tileBounds[zoom].minY; yRow <= tileBounds[zoom].maxY; yRow++) {
           bboxTiles.push([zoom, xRow, yRow]);
         }
       }
     }
+    console.log(bboxTiles, bbox);
     return bboxTiles;
   });
 

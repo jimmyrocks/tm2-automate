@@ -20,24 +20,9 @@ var tasks = [
   'completeTask'
 ];
 
-// TODO, this should be in fandlebars
-var fbobj = function(obj, tree) {
-  var newObj = Array.isArray(obj) ? [] : {};
-  for (var v in obj) {
-    if (typeof obj[v] === 'object') {
-      newObj[v] = fbobj(obj[v], tree);
-    } else if (typeof obj[v] === 'string') {
-      newObj[v] = fandlebars(obj[v], tree);
-    } else {
-      newObj[v] = obj[v];
-    }
-  }
-  return newObj;
-};
-
 var runNextTask = function(taskList, results, callback) {
   results = results ? results : {
-    'config': fbobj(config, global.process),
+    'config': fandlebars.obj(config, global.process),
     'settings': {
       'type': 'places_points'
     }
@@ -56,7 +41,6 @@ var runNextTask = function(taskList, results, callback) {
       .catch(function(err) {
         console.log(JSON.stringify(err, null, 2));
         throw (err.stack ? err : new Error(err));
-        process.exit(1);
       });
   } else {
     if (callback) callback(results.errors, results);

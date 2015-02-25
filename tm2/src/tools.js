@@ -20,20 +20,21 @@ module.exports = {
           reject(startError);
         } else {
           db.runQuery(res.config.interfaces[res.settings.type].getChanges, params, function(e, r) {
+            console.log(r[0].rows);
             if (e) {
               reject(e);
             } else {
-              if (r[0].result.rowCount) {
+              if (r[0].rowCount) {
                 fulfill({
-                  'result': r[0].result,
-                  'bboxList': r[0].result.rows
+                  'result': r[0],
+                  'bboxList': r[0].rows
                 });
               } else {
                 fulfill({
                   'stop': true,
                   'error': 'No new tiles',
-                  'result': r[0].result,
-                  'bboxList': r[0].result.rows
+                  'result': r[0],
+                  'bboxList': r[0].rows
                 });
               }
             }
@@ -119,10 +120,12 @@ module.exports = {
   'generateTiles': function(res) {
     return new Bluebird(function(fulfill, reject) {
       var tileliveCopyPath = res.config.interfaces[res.settings.type].tileliveCopyPath;
-      var tileFile = coordsToTiles(res.getTiles.bboxList, res.readStudioFile.minzoom, res.readStudioFile.maxzoom, res.readStudioFile.Layer[0].properties['buffer-size']).map(function(row) {
+      var tileData = coordsToTiles(res.getTiles.bboxList, res.readStudioFile.minzoom, res.readStudioFile.maxzoom, res.readStudioFile.Layer[0].properties['buffer-size']).map(function(row) {
         return row[0] + '/' + row[1] + '/' + row[2];
       }).join('\n');
-      fs.writeFile(res.config.interfaces[res.settings.type].tileFile, tileFile, function(writeError) {
+      fs.writeFile(res.config.interfaces[res.settings.type].tileFile, tileData, function(writeError) {
+        console.log(res.config.interfaces[res.settings.type].tileFile);
+        console.log(tileData);
         if (writeError) {
           reject(writeError);
         } else {
@@ -134,6 +137,7 @@ module.exports = {
             'mbtiles://' + res.downloadMbtiles.path
           ].join('');
           // For long-lived processes, it's best to run exec() asynchronously as the current synchronous implementation uses a lot of CPU
+          console.log(tileliveCopyPath + ' ' + params);
           shelljs.exec(tileliveCopyPath + ' ' + params, function(tileliveError, tileliveOutput) {
             // Delete the temp tilefile
             shelljs.rm(res.config.interfaces[res.settings.type].tileFile);
