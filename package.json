@@ -26,17 +26,17 @@
     "url": "http://github.com/nationalparkservice/tm2-automate"
   },
   "dependencies": {
-    "bluebird": "2.9.3",
+    "bluebird": "3.5.2",
     "datawrap": "git+https://github.com/jimmyrocks/datawrap#master",
-    "js-yaml": "3.2.5",
-    "mapbox-upload": "3.0.0",
-    "mbtiles": "0.7.8",
-    "minimist": "1.1.0",
-    "mkdirp": "0.5.0",
-    "request": "2.51.0",
-    "shelljs": "0.3.0",
-    "sqlite3": "3.0.4",
-    "tilelive": "5.5.4",
-    "tilelive-bridge": "1.2.5"
+    "js-yaml": "3.12.0",
+    "mapbox-upload": "4.2.4",
+    "mbtiles": "0.9.0",
+    "minimist": "1.2.0",
+    "mkdirp": "0.5.1",
+    "request": "2.88.0",
+    "shelljs": "0.8.2",
+    "sqlite3": "4.0.2",
+    "tilelive": "5.12.3",
+    "tilelive-bridge": "2.3.1"
   }
 }
